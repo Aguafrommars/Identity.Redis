@@ -540,10 +540,10 @@ namespace Aguacongas.Identity.Redis
             var response = await _db.HashGetAsync(RolesRedisKey, id);
             if (response.HasValue)
             {
-                var user = JsonConvert.DeserializeObject<TRole>(response);
-                user.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, id);
+                var role = JsonConvert.DeserializeObject<TRole>(response);
+                role.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, id);
 
-                return user;
+                return role;
             }
             return default(TRole);
         }

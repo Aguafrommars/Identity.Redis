@@ -115,12 +115,15 @@ namespace Aguacongas.Identity.Redis
             }
 
             var roleId = ConvertIdToString(role.Id);
+            role.ConcurrencyStamp = "0";
 
             var tran = _db.CreateTransaction();
             var roleNotExistsCondition = tran.AddCondition(Condition.HashNotExists(RolesRedisKey, roleId));
-            await tran.HashSetAsync(RolesRedisKey, roleId, JsonConvert.SerializeObject(role));
-            await tran.HashSetAsync(RolesConcurencyStampIndexKey, roleId, role.ConcurrencyStamp);
-            await tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashSetAsync(RolesRedisKey, roleId, JsonConvert.SerializeObject(role));
+            tran.HashSetAsync(RolesConcurencyStampIndexKey, roleId, GetConcurrencyStamp(role));
+            tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
@@ -152,16 +155,18 @@ namespace Aguacongas.Identity.Redis
             var roleId = ConvertIdToString(role.Id);
 
             var tran = _db.CreateTransaction();
-            tran.AddCondition(Condition.HashEqual(RolesConcurencyStampIndexKey, roleId, int.Parse(role.ConcurrencyStamp)));
-            await tran.HashSetAsync(RolesRedisKey, roleId, JsonConvert.SerializeObject(role));
-            var concurency = await tran.HashIncrementAsync(RolesConcurencyStampIndexKey, roleId);
-            await tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
+            tran.AddCondition(Condition.HashEqual(RolesConcurencyStampIndexKey, roleId, GetConcurrencyStamp(role)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashSetAsync(RolesRedisKey, roleId, JsonConvert.SerializeObject(role));
+            var concurency = tran.HashIncrementAsync(RolesConcurencyStampIndexKey, roleId);
+            tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
-            role.ConcurrencyStamp = concurency.ToString();
+            role.ConcurrencyStamp = concurency.Result.ToString();
 
             return IdentityResult.Success;
         }
@@ -184,9 +189,11 @@ namespace Aguacongas.Identity.Redis
             var roleId = ConvertIdToString(role.Id);
 
             var tran = _db.CreateTransaction();
-            tran.AddCondition(Condition.HashEqual(RolesConcurencyStampIndexKey, roleId, int.Parse(role.ConcurrencyStamp)));
-            await tran.HashDeleteAsync(RolesRedisKey, roleId);
-            await tran.HashDeleteAsync(RolesNameIndexKey, role.NormalizedName);
+            tran.AddCondition(Condition.HashEqual(RolesConcurencyStampIndexKey, roleId, GetConcurrencyStamp(role)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashDeleteAsync(RolesRedisKey, roleId);
+            tran.HashDeleteAsync(RolesNameIndexKey, role.NormalizedName);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
@@ -478,5 +485,13 @@ namespace Aguacongas.Identity.Redis
             return new List<TRoleClaim>();
         }
 
+        private static int? GetConcurrencyStamp(TRole role)
+        {
+            if (int.TryParse(role.ConcurrencyStamp, out int stamp))
+            {
+                return stamp;
+            }
+            return null;
+        }
     }
 }

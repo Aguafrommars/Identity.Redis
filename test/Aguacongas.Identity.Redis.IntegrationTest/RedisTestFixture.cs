@@ -1,20 +1,15 @@
-﻿using Aguacongas.Redis;
-using Aguacongas.Redis.TokenManager;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Text;
 
 namespace Aguacongas.Identity.Redis.IntegrationTest
 {
     public class RedisTestFixture
     {
         public IConfigurationRoot Configuration { get; private set; }
-        public RedisOptions RedisOptions { get; private set; }
-
+        public IDatabase Database { get; private set; }
+    
         public string TestDb { get; } = DateTime.Now.ToString("s");
         public RedisTestFixture()
         {
@@ -24,8 +19,11 @@ namespace Aguacongas.Identity.Redis.IntegrationTest
                 .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
                 .Build();
 
-            RedisOptions = new RedisOptions();
-            Configuration.GetSection("RedisOptions").Bind(RedisOptions);
+            var hostAndPor = Configuration.GetValue<string>("RedisOptions:HostAndPort");
+            var multiplexer = ConnectionMultiplexer.Connect(hostAndPor);
+            Database = multiplexer.GetDatabase();
+            //var server = multiplexer.GetServer(hostAndPor);
+            //server.FlushDatabase();
         }
     }
 }

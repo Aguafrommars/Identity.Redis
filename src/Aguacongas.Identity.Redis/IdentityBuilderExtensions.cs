@@ -1,20 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
-using System.Net.Http;
 using System.Reflection;
-using Aguacongas.Redis;
-using Aguacongas.Redis.TokenManager;
 using Aguacongas.Identity.Redis;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using StackExchange.Redis;
+using System.IO;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+
     /// <summary>
     /// Contains extension methods to <see cref="IdentityBuilder"/> for adding entity framework stores.
     /// </summary>
@@ -24,16 +19,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds an Redis implementation of identity stores.
         /// </summary>
         /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <param name="url">Redis url</param>
-        /// <param name="getTokenAccess"><see cref="ITokenAccess"/> factory function</param>
+        /// <param name="getDatabase"><see cref="IDatabase"/> factory function returning the redis database to use</param>
         /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string url, Func<IServiceProvider, ITokenAccess> getTokenAccess)
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Func<IServiceProvider, IDatabase> getDatabase)
         {
-            AddStores(builder.Services, builder.UserType, builder.RoleType);
-            builder.Services.AddScoped<HttpClient>()
-                .AddScoped<IRedisClient>(provider => new RedisClient(provider.GetRequiredService<HttpClient>(), provider.GetRequiredService<IRedisTokenManager>(), url, new JsonSerializerSettings()))
-                .AddScoped<IRedisTokenManager, AuthTokenManager>()
-                .AddSingleton(getTokenAccess);
+            AddStores(builder.Services, builder.UserType, builder.RoleType, getDatabase);
 
             return builder;
         }
@@ -42,70 +32,92 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds an Redis implementation of identity stores.
         /// </summary>
         /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <param name="url">Redis url</param>
-        /// <param name="getTokenManager"><see cref="IRedisTokenManager"/> factory function</param>
+        /// <param name="configure">Action to configure <see cref="ConfigurationOptions"/></param>
+        /// <param name="database">(Optional) The redis database to use</param>
+        /// <param name="log">(Optional) a <see cref="TextWriter"/> to write log</param>
         /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string url, Func<IServiceProvider, IRedisTokenManager> getTokenManager)
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Action<ConfigurationOptions> configure, int? database = null, TextWriter log = null)
         {
-            AddStores(builder.Services, builder.UserType, builder.RoleType);
-            builder.Services.AddScoped<HttpClient>()
-                .AddScoped<IRedisClient>(provider => new RedisClient(provider.GetRequiredService<HttpClient>(), provider.GetRequiredService<IRedisTokenManager>(), url, new JsonSerializerSettings()))
-                .AddSingleton(provider => getTokenManager(provider));
+            var services = builder.Services;
 
-            return builder;
-        }
-
-        /// <summary>
-        /// Adds an Redis implementation of identity stores.
-        /// </summary>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <param name="url">Redis url</param>
-        /// <param name="configure">Action to configure AuthTokenOptions</param>
-        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string url, Action<AuthTokenOptions> configure)
-        {
-            builder.Services.Configure(configure);
-
-            return builder
-                .AddRedisStores(url, provider =>
+            services.Configure(configure)
+                .AddSingleton<IConnectionMultiplexer>(provider =>
                 {
-                    var options = provider.GetRequiredService<IOptions<AuthTokenOptions>>();
-                    var json = JsonConvert.SerializeObject(options?.Value ?? throw new ArgumentNullException(nameof(options)));
-                    return GoogleCredential.FromJson(json)
-                        .CreateScoped("https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/Redis.database")
-                        .UnderlyingCredential;
+                    var options = provider.GetRequiredService<IOptions<ConfigurationOptions>>().Value;
+                    return ConnectionMultiplexer.Connect(options, log);
+                });
+
+            return builder.AddRedisStores(provider =>
+                {
+                    var options = provider.GetRequiredService<IOptions<ConfigurationOptions>>().Value;
+                    var multiplexer = provider.GetRequiredService<IConnectionMultiplexer>();
+                    return multiplexer.GetDatabase(database.HasValue ? database.Value : 
+                        options.DefaultDatabase.HasValue ? options.DefaultDatabase.Value : -1);
                 });
         }
 
-        private static void AddStores(IServiceCollection services, Type userType, Type roleType)
+        /// <summary>
+        /// Adds an Redis implementation of identity stores.
+        /// </summary>
+        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
+        /// <param name="configuration">The redis configuration string</param>
+        /// <param name="database">(Optional) The redis database to use</param>
+        /// <param name="log">(Optional) a <see cref="TextWriter"/> to write log</param>
+        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string configuration, int? database = null, TextWriter log = null)
         {
-            var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<string>));
+            var services = builder.Services;
+
+            services.AddSingleton<IConnectionMultiplexer>(provider =>
+                {
+                    return ConnectionMultiplexer.Connect(configuration, log);
+                });
+
+            return builder
+                .AddRedisStores(provider =>
+                {
+                    var multiplexer = ConnectionMultiplexer.Connect(configuration, log);
+                    return multiplexer.GetDatabase(database.HasValue ? database.Value : -1);
+                });
+        }
+        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Func<IServiceProvider, IDatabase> getDatabase)
+        {
+            var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<>));
             if (identityUserType == null)
             {
-                throw new InvalidOperationException("AddEntityFrameworkStores can only be called with a user that derives from IdentityUser<string>.");
+                throw new InvalidOperationException("AddEntityFrameworkStores can only be called with a user that derives from IdentityUser<TKey>.");
             }
 
+            var keyType = identityUserType.GenericTypeArguments[0];
+        
             var userOnlyStoreType = typeof(UserOnlyStore<>).MakeGenericType(userType);
 
-            if (roleType != null)
+            if (roleType != null)   
             {
-                var identityRoleType = FindGenericBaseType(roleType, typeof(IdentityRole<string>));
+                var identityRoleType = FindGenericBaseType(roleType, typeof(IdentityRole<>));
                 if (identityRoleType == null)
                 {
-                    throw new InvalidOperationException("AddEntityFrameworkStores can only be called with a role that derives from IdentityRole<string>.");
+                    throw new InvalidOperationException("AddEntityFrameworkStores can only be called with a role that derives from IdentityRole<TKey>.");
                 }
 
-                var userStoreType = typeof(UserStore<,>).MakeGenericType(userType, roleType);
-                var roleStoreType = typeof(RoleStore<>).MakeGenericType(roleType);
+                var userStoreType = typeof(UserStore<,,>).MakeGenericType(userType, roleType, keyType);
+                var roleStoreType = typeof(RoleStore<,>).MakeGenericType(roleType, keyType);
 
-                services.TryAddScoped(typeof(UserOnlyStore<>).MakeGenericType(userType), userOnlyStoreType);
-                services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
-                services.TryAddScoped(typeof(IRoleStore<>).MakeGenericType(roleType), roleStoreType);
+                services.TryAddScoped(typeof(UserOnlyStore<,>).MakeGenericType(userType), provider => CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
+                services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), provider => userStoreType.GetConstructor(new Type[] { typeof(IDatabase), userOnlyStoreType, typeof(IdentityErrorDescriber) })
+                    .Invoke(new object[] { getDatabase(provider), provider.GetService(userOnlyStoreType), provider.GetService<IdentityErrorDescriber>() }));
+                services.TryAddScoped(typeof(IRoleStore<>).MakeGenericType(roleType), provider => CreateStoreInstance(roleStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
             }
             else
             {   // No Roles
-                services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userOnlyStoreType);
+                services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), provider => CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
             }
+        }
+
+        private static object CreateStoreInstance(Type storeType, IDatabase db, IdentityErrorDescriber errorDescriber)
+        {
+            var constructor = storeType.GetConstructor(new Type[] { typeof(IDatabase), typeof(IdentityErrorDescriber)});
+            return constructor.Invoke(new object[] { db, errorDescriber });
         }
 
         private static TypeInfo FindGenericBaseType(Type currentType, Type genericBaseType)

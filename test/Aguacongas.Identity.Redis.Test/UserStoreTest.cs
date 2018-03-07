@@ -1,15 +1,7 @@
-﻿using Aguacongas.Redis;
-using Aguacongas.Redis.TokenManager;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Identity;
 using Moq;
+using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,9 +12,9 @@ namespace Aguacongas.Identity.Redis.Test
         [Fact]
         public async Task UserStoreMethodsThrowWhenDisposedTest()
         {
-            var clientMock = new Mock<IRedisClient>();
-            var userOnlyStore = new UserOnlyStore(clientMock.Object);
-            var store = new UserStore(clientMock.Object, userOnlyStore);
+            var dbMock = new Mock<IDatabase>();
+            var userOnlyStore = new UserOnlyStore(dbMock.Object);
+            var store = new UserStore(dbMock.Object, userOnlyStore);
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -56,11 +48,11 @@ namespace Aguacongas.Identity.Redis.Test
         public async Task UserStorePublicNullCheckTest()
         {
             Assert.Throws<ArgumentNullException>("client", () => new UserStore(null, null));
-            var clientMock = new Mock<IRedisClient>();
-            Assert.Throws<ArgumentNullException>("userOnlyStore", () => new UserStore(clientMock.Object, null));
+            var dbMock = new Mock<IDatabase>();
+            Assert.Throws<ArgumentNullException>("userOnlyStore", () => new UserStore(dbMock.Object, null));
 
-            var userOnlyStore = new UserOnlyStore(clientMock.Object);
-            var store = new UserStore(clientMock.Object, userOnlyStore);
+            var userOnlyStore = new UserOnlyStore(dbMock.Object);
+            var store = new UserStore(dbMock.Object, userOnlyStore);
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));

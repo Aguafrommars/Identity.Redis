@@ -1,11 +1,8 @@
-using Aguacongas.Redis;
-using Aguacongas.Redis.TokenManager;
 using IdentitySample.Models;
 using IdentitySample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,10 +31,7 @@ namespace IdentitySample
 
             // Add framework services.
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddRedisStores(Configuration.GetValue<string>("RedisOptions:DatabaseUrl"), options =>
-                {
-                    Configuration.GetSection("AuthTokenOptions").Bind(options);
-                })
+                .AddRedisStores(Configuration.GetValue<string>("RedisOptions:HostAndPort"))
                 .AddDefaultTokenProviders();
 
             var twitterConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"];

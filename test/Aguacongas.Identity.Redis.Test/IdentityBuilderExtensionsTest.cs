@@ -1,5 +1,4 @@
-﻿using Aguacongas.Redis;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -11,7 +10,7 @@ namespace Aguacongas.Identity.Redis.Test
     public class IdentityBuilderExtensionsTest
     {
         [Fact]
-        public void AddRedisStores_with_AuthTokenOptionsTest()
+        public void AddRedisStores_with_ConfigurationStringTest()
         {
             var builder = new ConfigurationBuilder();
             var configuration = builder.AddUserSecrets<IdentityBuilderExtensionsTest>()
@@ -21,10 +20,7 @@ namespace Aguacongas.Identity.Redis.Test
 
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddRedisStores("http:test", options =>
-                {
-                    configuration.GetSection("AuthTokenOptions").Bind(options);
-                });
+                .AddRedisStores("test");
 
             var provider = services.BuildServiceProvider();
 
@@ -33,14 +29,13 @@ namespace Aguacongas.Identity.Redis.Test
         }
 
         [Fact]
-        public void AddRedisStores_with_RedisTokenMamagerTest()
+        public void AddRedisStores_with_ConfigurationOptionsTest()
         {
-            var mock = new Mock<IRedisTokenManager>();
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddRedisStores("http://test", p =>
+                .AddRedisStores(options =>
                 {
-                    return mock.Object;
+                    options.EndPoints.Add("test");
                 });
 
             var provider = services.BuildServiceProvider();

@@ -134,15 +134,18 @@ namespace Aguacongas.Identity.Redis
 
             var userId = ConvertIdToString(user.Id);
 
-            var tran = _db.CreateTransaction();          
+            user.ConcurrencyStamp = "0";
+            var tran = _db.CreateTransaction();
             var userNotExistsCondition = tran.AddCondition(Condition.HashNotExists(UsersRedisKey, userId));
-            await tran.HashSetAsync(UsersRedisKey, userId, JsonConvert.SerializeObject(user));
-            await tran.HashSetAsync(UsersConcurencyStampIndexKey, userId, user.ConcurrencyStamp);
-            await tran.HashSetAsync(UsersNameIndexKey, user.NormalizedUserName, userId);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashSetAsync(UsersRedisKey, userId, JsonConvert.SerializeObject(user));
+            tran.HashSetAsync(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user));
+            tran.HashSetAsync(UsersNameIndexKey, user.NormalizedUserName, userId);
             if (!string.IsNullOrEmpty(user.NormalizedEmail))
-            { 
-                await tran.HashSetAsync(UsersEmailIndexKey, user.NormalizedEmail, userId);
+            {
+                tran.HashSetAsync(UsersEmailIndexKey, user.NormalizedEmail, userId);
             }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
@@ -174,20 +177,22 @@ namespace Aguacongas.Identity.Redis
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, int.Parse(user.ConcurrencyStamp)));
-            await tran.HashSetAsync(UsersRedisKey, userId, JsonConvert.SerializeObject(user));
-            var concurency = await tran.HashIncrementAsync(UsersConcurencyStampIndexKey, userId);
-            await tran.HashSetAsync(UsersNameIndexKey, user.NormalizedUserName, userId);
+            tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashSetAsync(UsersRedisKey, userId, JsonConvert.SerializeObject(user));
+            var concurency = tran.HashIncrementAsync(UsersConcurencyStampIndexKey, userId);
+            tran.HashSetAsync(UsersNameIndexKey, user.NormalizedUserName, userId);
             if (!string.IsNullOrEmpty(user.NormalizedEmail))
             {
-                await tran.HashSetAsync(UsersEmailIndexKey, user.NormalizedEmail, userId);
+                tran.HashSetAsync(UsersEmailIndexKey, user.NormalizedEmail, userId);
             }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
-            user.ConcurrencyStamp = concurency.ToString();
+            user.ConcurrencyStamp = concurency.Result.ToString();
 
             return IdentityResult.Success;
         }
@@ -210,13 +215,15 @@ namespace Aguacongas.Identity.Redis
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, int.Parse(user.ConcurrencyStamp)));
-            await tran.HashDeleteAsync(UsersRedisKey, userId);
-            await tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedUserName);
+            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            tran.HashDeleteAsync(UsersRedisKey, userId);
+            tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedUserName);
             if (user.NormalizedEmail != null)
             {
-                await tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedEmail);
+                tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedEmail);
             }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
@@ -234,14 +241,26 @@ namespace Aguacongas.Identity.Redis
             {
                 throw new ArgumentNullException(nameof(user));
             }
+            if (user.NormalizedEmail == normalizedName)
+            {
+                return;
+            }
 
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, int.Parse(user.ConcurrencyStamp)));
-            await tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedUserName);
-            await tran.HashSetAsync(UsersNameIndexKey, normalizedName, userId);
-            
+            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            if (user.NormalizedUserName != null)
+            {
+                tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedUserName);
+            }
+            if (normalizedName != null)
+            {
+                tran.HashSetAsync(UsersNameIndexKey, normalizedName, userId);
+            }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
             if (!await tran.ExecuteAsync())
             {
                 throw new DBConcurrencyException($"ConcurrencyStamp {user.ConcurrencyStamp} doesn't match for user: {user.Id}");
@@ -258,19 +277,25 @@ namespace Aguacongas.Identity.Redis
             {
                 throw new ArgumentNullException(nameof(user));
             }
+            if (user.NormalizedEmail == normalizedEmail)
+            {
+                return;
+            }
 
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, int.Parse(user.ConcurrencyStamp)));
+            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             if (user.NormalizedEmail != null)
             {
-                await tran.HashDeleteAsync(UsersEmailIndexKey, user.NormalizedEmail);
+                tran.HashDeleteAsync(UsersEmailIndexKey, user.NormalizedEmail);
             }
             if (normalizedEmail != null)
             {
-                await tran.HashSetAsync(UsersEmailIndexKey, normalizedEmail, userId);
+                tran.HashSetAsync(UsersEmailIndexKey, normalizedEmail, userId);
             }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             if (!await tran.ExecuteAsync())
             {
@@ -295,8 +320,8 @@ namespace Aguacongas.Identity.Redis
             var response = await _db.HashGetAsync(UsersRedisKey, userId);
             if (response.HasValue)
             {
-                var user = JsonConvert.DeserializeObject<TUser>(response);            
-                user.ConcurrencyStamp = await _db.HashGetAsync(UsersConcurencyStampIndexKey, userId);
+                var user = JsonConvert.DeserializeObject<TUser>(response);
+                user.ConcurrencyStamp = (await _db.HashGetAsync(UsersConcurencyStampIndexKey, userId)).ToString();
 
                 return user;
             }
@@ -492,7 +517,7 @@ namespace Aguacongas.Identity.Redis
             var logins = await GetUserLoginsAsync(userId);
             logins.Add(CreateUserLogin(user, login));
 
-            await _db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(logins));
+            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins));
             await _db.HashSetAsync(UserLoginProviderKeyPrefix + login.LoginProvider, login.ProviderKey, userId);
         }
 
@@ -519,7 +544,7 @@ namespace Aguacongas.Identity.Redis
             var logins = await GetUserLoginsAsync(userId);
             logins.RemoveAll(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
 
-            await _db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(logins));
+            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins));
             await _db.HashDeleteAsync(UserLoginProviderKeyPrefix + loginProvider, providerKey);
         }
 
@@ -720,8 +745,8 @@ namespace Aguacongas.Identity.Redis
 
             if (userId.HasValue)
             {
-                var result = await _db.HashGetAsync(UserLoginsRedisKey, userId);
-                return JsonConvert.DeserializeObject<TUserLogin>(result);
+                var logins = await GetUserLoginsAsync(userId);
+                return logins.FirstOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             }
 
             return default(TUserLogin);
@@ -781,6 +806,15 @@ namespace Aguacongas.Identity.Redis
             }
 
             return new List<TUserLogin>();
+        }
+
+        private static int? GetConcurrencyStamp(TUser user)
+        {
+            if (int.TryParse(user.ConcurrencyStamp, out int stamp))
+            {
+                return stamp;
+            }
+            return null;
         }
     }
 }
