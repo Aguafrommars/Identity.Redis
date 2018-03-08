@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Projects\Perso\Identity.Redis\src\Aguacongas.Identity.Redis\IdentityBuilderExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Reflection;
+using Aguacongas.Identity.Redis;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+using System.IO;
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+
+    /// &lt;summary&gt;
+    /// Contains extension methods to &lt;see cref=&quot;IdentityBuilder&quot;/&gt; for adding entity framework stores.
+    /// &lt;/summary&gt;
+    public static class IdentityBuilderExtensions
+    {
+        /// &lt;summary&gt;
+        /// Adds an Redis implementation of identity stores.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;builder&quot;&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/param&gt;
+        /// &lt;param name=&quot;getDatabase&quot;&gt;&lt;see cref=&quot;IDatabase&quot;/&gt; factory function returning the redis database to use&lt;/param&gt;
+        /// &lt;returns&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/returns&gt;
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Func&lt;IServiceProvider, IDatabase&gt; getDatabase)
+        {
+            AddStores(builder.Services, builder.UserType, builder.RoleType, getDatabase);
+
+            return builder;
+        }
+
+        /// &lt;summary&gt;
+        /// Adds an Redis implementation of identity stores.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;builder&quot;&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/param&gt;
+        /// &lt;param name=&quot;configure&quot;&gt;Action to configure &lt;see cref=&quot;ConfigurationOptions&quot;/&gt;&lt;/param&gt;
+        /// &lt;param name=&quot;database&quot;&gt;(Optional) The redis database to use&lt;/param&gt;
+        /// &lt;param name=&quot;log&quot;&gt;(Optional) a &lt;see cref=&quot;TextWriter&quot;/&gt; to write log&lt;/param&gt;
+        /// &lt;returns&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/returns&gt;
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Action&lt;ConfigurationOptions&gt; configure, int? database = null, TextWriter log = null)
+        {
+            var services = builder.Services;
+
+            services.Configure(configure)
+                .AddSingleton&lt;IConnectionMultiplexer&gt;(provider =&gt;
+                {
+                    var options = provider.GetRequiredService&lt;IOptions&lt;ConfigurationOptions&gt;&gt;().Value;
+                    return ConnectionMultiplexer.Connect(options, log);
+                });
+
+            return builder.AddRedisStores(provider =&gt;
+                {
+                    var options = provider.GetRequiredService&lt;IOptions&lt;ConfigurationOptions&gt;&gt;().Value;
+                    var multiplexer = provider.GetRequiredService&lt;IConnectionMultiplexer&gt;();
+                    return multiplexer.GetDatabase(database.HasValue ? database.Value : 
+                        options.DefaultDatabase.HasValue ? options.DefaultDatabase.Value : -1);
+                });
+        }
+
+        /// &lt;summary&gt;
+        /// Adds an Redis implementation of identity stores.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;builder&quot;&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/param&gt;
+        /// &lt;param name=&quot;configuration&quot;&gt;The redis configuration string&lt;/param&gt;
+        /// &lt;param name=&quot;database&quot;&gt;(Optional) The redis database to use&lt;/param&gt;
+        /// &lt;param name=&quot;log&quot;&gt;(Optional) a &lt;see cref=&quot;TextWriter&quot;/&gt; to write log&lt;/param&gt;
+        /// &lt;returns&gt;The &lt;see cref=&quot;IdentityBuilder&quot;/&gt; instance this method extends.&lt;/returns&gt;
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string configuration, int? database = null, TextWriter log = null)
+        {
+            var services = builder.Services;
+
+            services.AddSingleton&lt;IConnectionMultiplexer&gt;(provider =&gt;
+                {
+                    return ConnectionMultiplexer.Connect(configuration, log);
+                });
+
+            return builder
+                .AddRedisStores(provider =&gt;
+                {
+                    var multiplexer = ConnectionMultiplexer.Connect(configuration, log);
+                    return multiplexer.GetDatabase(database.HasValue ? database.Value : -1);
+                });
+        }
+        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Func&lt;IServiceProvider, IDatabase&gt; getDatabase)
+        {
+            var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser&lt;&gt;));
+            if (identityUserType == null)
+            {
+                throw new InvalidOperationException(&quot;AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;.&quot;);
+            }
+
+            var keyType = identityUserType.GenericTypeArguments[0];
+        
+            var userOnlyStoreType = typeof(UserOnlyStore&lt;,&gt;).MakeGenericType(userType, keyType);
+
+            if (roleType != null)   
+            {
+                var identityRoleType = FindGenericBaseType(roleType, typeof(IdentityRole&lt;&gt;));
+                if (identityRoleType == null)
+                {
+                    throw new InvalidOperationException(&quot;AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;.&quot;);
+                }
+
+                var userStoreType = typeof(UserStore&lt;,,&gt;).MakeGenericType(userType, roleType, keyType);
+                var roleStoreType = typeof(RoleStore&lt;,&gt;).MakeGenericType(roleType, keyType);
+
+                services.TryAddScoped(typeof(UserOnlyStore&lt;,&gt;).MakeGenericType(userType, keyType), provider =&gt; CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService&lt;IdentityErrorDescriber&gt;()));
+                services.TryAddScoped(typeof(IUserStore&lt;&gt;).MakeGenericType(userType), provider =&gt; userStoreType.GetConstructor(new Type[] { typeof(IDatabase), userOnlyStoreType, typeof(IdentityErrorDescriber) })
+                    .Invoke(new object[] { getDatabase(provider), provider.GetService(userOnlyStoreType), provider.GetService&lt;IdentityErrorDescriber&gt;() }));
+                services.TryAddScoped(typeof(IRoleStore&lt;&gt;).MakeGenericType(roleType), provider =&gt; CreateStoreInstance(roleStoreType, getDatabase(provider), provider.GetService&lt;IdentityErrorDescriber&gt;()));
+            }
+            else
+            {   // No Roles
+                services.TryAddScoped(typeof(IUserStore&lt;&gt;).MakeGenericType(userType), provider =&gt; CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService&lt;IdentityErrorDescriber&gt;()));
+            }
+        }
+
+        private static object CreateStoreInstance(Type storeType, IDatabase db, IdentityErrorDescriber errorDescriber)
+        {
+            var constructor = storeType.GetConstructor(new Type[] { typeof(IDatabase), typeof(IdentityErrorDescriber)});
+            return constructor.Invoke(new object[] { db, errorDescriber });
+        }
+
+        private static TypeInfo FindGenericBaseType(Type currentType, Type genericBaseType)
+        {
+            var type = currentType;
+            while (type != null)
+            {
+                var typeInfo = type.GetTypeInfo();
+                var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
+                if (genericType != null &amp;&amp; genericType == genericBaseType)
+                {
+                    return typeInfo;
+                }
+                type = type.BaseType;
+            }
+            return null;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[25,9,25,10,1],[26,13,26,90,1],[28,13,28,28,1],[29,9,29,10,1],[40,9,40,10,1],[41,13,41,45,1],[43,13,45,17,1],[45,17,45,18,1],[45,18,46,21,1],[46,21,46,103,1],[46,103,47,21,1],[47,21,47,72,1],[47,72,48,17,1],[48,17,48,18,1],[48,18,48,20,1],[43,13,48,20,1],[50,13,51,17,1],[51,17,51,18,1],[51,18,52,21,1],[52,21,52,103,1],[52,103,53,21,1],[53,21,53,93,1],[53,93,54,21,1],[54,21,55,96,1],[55,96,56,17,1],[56,17,56,18,1],[56,18,56,20,1],[50,13,56,20,1],[57,9,57,10,1],[68,9,68,10,1],[69,13,69,45,1],[71,13,72,17,1],[72,17,72,18,0],[72,18,73,21,1],[73,21,73,78,0],[73,78,74,17,1],[74,17,74,18,0],[74,18,74,20,1],[71,13,74,20,1],[76,13,78,17,1],[78,17,78,18,1],[78,18,79,21,1],[79,21,79,89,1],[79,89,80,21,1],[80,21,80,93,1],[80,93,81,17,1],[81,17,81,18,1],[81,18,81,20,1],[76,13,81,20,1],[82,9,82,10,1],[84,9,84,10,1],[85,13,85,90,1],[86,13,86,42,1],[87,13,87,14,0],[88,17,88,150,0],[91,13,91,68,1],[93,13,93,97,1],[95,13,95,34,1],[96,13,96,14,1],[97,17,97,94,1],[98,17,98,46,1],[99,17,99,18,0],[100,21,100,154,0],[103,17,103,104,1],[104,17,104,93,1],[106,17,106,112,1],[106,112,106,220,1],[106,220,106,222,1],[106,17,106,222,1],[107,17,107,99,1],[107,99,108,155,1],[108,155,108,157,1],[107,17,108,157,1],[109,17,109,99,1],[109,99,109,203,1],[109,203,109,205,1],[109,17,109,205,1],[110,13,110,14,1],[112,13,112,14,1],[113,17,113,99,1],[113,99,113,207,1],[113,207,113,209,1],[113,17,113,209,1],[114,13,114,14,1],[115,9,115,10,1],[118,9,118,10,1],[119,13,119,121,1],[120,13,120,76,1],[121,9,121,10,1],[124,9,124,10,1],[125,13,125,36,1],[126,13,126,33,1],[127,13,127,14,1],[128,17,128,51,1],[129,17,129,95,1],[130,17,130,75,1],[131,17,131,18,1],[132,21,132,37,1],[134,17,134,38,1],[135,13,135,14,1],[136,13,136,25,0],[137,9,137,10,1]]);
+    </script>
+  </body>
+</html>
