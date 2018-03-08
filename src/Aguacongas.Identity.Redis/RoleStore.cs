@@ -24,7 +24,7 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public RoleStore(IDatabase db, IdentityErrorDescriber describer = null) : base(db, describer) { }
     }
@@ -41,7 +41,7 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public RoleStore(IDatabase db, IdentityErrorDescriber describer = null) : base(db, describer) { }
     }
@@ -86,7 +86,7 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole, TUserRole, TRoleClaim}"/>.
         /// </summary>
-        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public RoleStore(IDatabase db, IdentityErrorDescriber describer = null)
         {

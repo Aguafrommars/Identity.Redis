@@ -294,3 +294,4 @@ __pycache__/
 /JetBrains.dotCover.CommandLineTools/tools
 /latest
 *.snapshot
+/redis-64/tools

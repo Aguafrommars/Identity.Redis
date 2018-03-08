@@ -36,7 +36,7 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Constructs a new instance of <see cref="UserStore{TUser}"/>.
         /// </summary>
-        /// <param name="client">The <see cref="IDatabase"/>.</param>
+        /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(IDatabase db, UserOnlyStore<TUser, string> userOnlyStore, IdentityErrorDescriber describer = null) : base(db, userOnlyStore, describer) { }
     }
@@ -114,7 +114,7 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Creates a new instance of the store.
         /// </summary>
-        /// <param name="client">The <see cref="IDatabase"/>.</param>
+        /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
         public UserStore(IDatabase db, UserOnlyStore<TUser, TKey, TUserClaim, TUserLogin, TUserToken> userOnlyStore, IdentityErrorDescriber describer = null) : base(describer ?? new IdentityErrorDescriber())
         {
