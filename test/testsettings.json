@@ -1,0 +1,5 @@
+{
+    "RedisOptions": {
+        "HostAndPort": "localhost:6379"
+    }
+}

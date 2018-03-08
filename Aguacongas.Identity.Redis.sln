@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C8860BFF-CF88-4368-9B29-E486606A6649}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2068ADBE-BD98-4D00-A01C-15074A3E0D63}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aguacongas.Identity.Redis.Test", "test\Aguacongas.Identity.Redis.Test\Aguacongas.Identity.Redis.Test.csproj", "{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB8393D5-3F29-48B1-B52C-09E881D2EDC3}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		build.cmd = build.cmd
+		build.ps1 = build.ps1
+		CHANGELOG.md = CHANGELOG.md
+		publish.cmd = publish.cmd
+		publish.ps1 = publish.ps1
+		README.md = README.md
+		test\testsettings.json = test\testsettings.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aguacongas.Identity.Redis.IntegrationTest", "test\Aguacongas.Identity.Redis.IntegrationTest\Aguacongas.Identity.Redis.IntegrationTest.csproj", "{C121D35C-FB16-48F8-BD20-A215FB8D1E78}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{66F9719E-6DB1-476A-878C-C26884588373}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aguacongas.Identity.Redis", "src\Aguacongas.Identity.Redis\Aguacongas.Identity.Redis.csproj", "{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C121D35C-FB16-48F8-BD20-A215FB8D1E78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C121D35C-FB16-48F8-BD20-A215FB8D1E78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C121D35C-FB16-48F8-BD20-A215FB8D1E78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C121D35C-FB16-48F8-BD20-A215FB8D1E78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31} = {2068ADBE-BD98-4D00-A01C-15074A3E0D63}
+		{C121D35C-FB16-48F8-BD20-A215FB8D1E78} = {2068ADBE-BD98-4D00-A01C-15074A3E0D63}
+		{2149234A-93E9-46C4-8C7E-DEA3BB3D5E65} = {66F9719E-6DB1-476A-878C-C26884588373}
+		{FF3E727F-5B4A-425B-8D8F-A5FC7CC354B2} = {C8860BFF-CF88-4368-9B29-E486606A6649}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DCB8F9E7-93CA-40BF-ADE6-55E23192FE72}
+	EndGlobalSection
+EndGlobal
