@@ -295,3 +295,4 @@ __pycache__/
 /latest
 *.snapshot
 /redis-64/tools
+/ReportGenerator

@@ -15,6 +15,7 @@ install:
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
     - cmd: nuget install JetBrains.dotCover.CommandLineTools -ExcludeVersion
+    - cmd: nuget install ReportGenerator -ExcludeVersion
     - cmd: dotnet restore
 build_script:
 - cmd: build.cmd

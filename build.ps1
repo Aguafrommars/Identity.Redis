@@ -20,6 +20,9 @@ gci -rec `
   Write-Host "merge " $merge
   JetBrains.dotCover.CommandLineTools\tools\dotCover.exe merge /Source="$merge" /Output="coverage\coverage.snapshot"
   JetBrains.dotCover.CommandLineTools\tools\dotCover.exe report /Source="coverage\coverage.snapshot" /Output="coverage\docs\index.html" /ReportType="HTML"
+  JetBrains.dotCover.CommandLineTools\tools\dotCover.exe report /Source="coverage\coverage.snapshot" /Output="coverage\coverage.xml" /ReportType="DetailedXML"
 
+  ReportGenerator\tools\ReportGenerator.exe "-reports:coverage\coverage.xml" "-targetdir:coverage\docs" "-reporttypes:Badges"
+  
   exit $result
   
