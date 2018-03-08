@@ -20,7 +20,7 @@ namespace Aguacongas.Identity.Redis.Test
 
             var services = new ServiceCollection();
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddRedisStores("test");
+                .AddRedisStores("localhost");
 
             var provider = services.BuildServiceProvider();
 
@@ -35,13 +35,25 @@ namespace Aguacongas.Identity.Redis.Test
             services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddRedisStores(options =>
                 {
-                    options.EndPoints.Add("test");
+                    options.EndPoints.Add("localhost");
                 });
 
             var provider = services.BuildServiceProvider();
 
             provider.GetRequiredService<IUserStore<IdentityUser>>();
             provider.GetRequiredService<IRoleStore<IdentityRole>>();
+        }
+
+        [Fact]
+        public void AddRedistore_without_roleTest()
+        {
+            var services = new ServiceCollection();
+            var builder = new IdentityBuilder(typeof(IdentityUser), services);
+
+            builder.AddRedisStores("localhost");
+
+            var provider = services.BuildServiceProvider();
+            provider.GetRequiredService<IUserStore<IdentityUser>>();
         }
     }
 }

@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var keyType = identityUserType.GenericTypeArguments[0];
         
-            var userOnlyStoreType = typeof(UserOnlyStore<>).MakeGenericType(userType);
+            var userOnlyStoreType = typeof(UserOnlyStore<,>).MakeGenericType(userType, keyType);
 
             if (roleType != null)   
             {
@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var userStoreType = typeof(UserStore<,,>).MakeGenericType(userType, roleType, keyType);
                 var roleStoreType = typeof(RoleStore<,>).MakeGenericType(roleType, keyType);
 
-                services.TryAddScoped(typeof(UserOnlyStore<,>).MakeGenericType(userType), provider => CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
+                services.TryAddScoped(typeof(UserOnlyStore<,>).MakeGenericType(userType, keyType), provider => CreateStoreInstance(userOnlyStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
                 services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), provider => userStoreType.GetConstructor(new Type[] { typeof(IDatabase), userOnlyStoreType, typeof(IdentityErrorDescriber) })
                     .Invoke(new object[] { getDatabase(provider), provider.GetService(userOnlyStoreType), provider.GetService<IdentityErrorDescriber>() }));
                 services.TryAddScoped(typeof(IRoleStore<>).MakeGenericType(roleType), provider => CreateStoreInstance(roleStoreType, getDatabase(provider), provider.GetService<IdentityErrorDescriber>()));
@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection
             while (type != null)
             {
                 var typeInfo = type.GetTypeInfo();
-                var genericType = type.IsGenericType ? type: null;
+                var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
                 if (genericType != null && genericType == genericBaseType)
                 {
                     return typeInfo;

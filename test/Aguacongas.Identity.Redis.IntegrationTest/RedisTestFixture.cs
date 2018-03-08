@@ -19,11 +19,14 @@ namespace Aguacongas.Identity.Redis.IntegrationTest
                 .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
                 .Build();
 
-            var hostAndPor = Configuration.GetValue<string>("RedisOptions:HostAndPort");
-            var multiplexer = ConnectionMultiplexer.Connect(hostAndPor);
+            var options = new ConfigurationOptions();
+            options.EndPoints.Add(Configuration.GetValue<string>("RedisOptions:HostAndPort"));
+            options.AllowAdmin = true;
+
+            var multiplexer = ConnectionMultiplexer.Connect(options);
             Database = multiplexer.GetDatabase();
-            //var server = multiplexer.GetServer(hostAndPor);
-            //server.FlushDatabase();
+            var server = multiplexer.GetServer(options.EndPoints[0]);
+            server.FlushDatabase();
         }
     }
 }

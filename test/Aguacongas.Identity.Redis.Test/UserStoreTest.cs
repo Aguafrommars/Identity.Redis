@@ -47,7 +47,7 @@ namespace Aguacongas.Identity.Redis.Test
         [Fact]
         public async Task UserStorePublicNullCheckTest()
         {
-            Assert.Throws<ArgumentNullException>("client", () => new UserStore(null, null));
+            Assert.Throws<ArgumentNullException>("db", () => new UserStore(null, null));
             var dbMock = new Mock<IDatabase>();
             Assert.Throws<ArgumentNullException>("userOnlyStore", () => new UserStore(dbMock.Object, null));
 

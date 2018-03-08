@@ -18,8 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
 		CHANGELOG.md = CHANGELOG.md
-		cover.cmd = cover.cmd
 		README.md = README.md
+		test\testsettings.json = test\testsettings.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aguacongas.Identity.Redis.IntegrationTest", "test\Aguacongas.Identity.Redis.IntegrationTest\Aguacongas.Identity.Redis.IntegrationTest.csproj", "{C121D35C-FB16-48F8-BD20-A215FB8D1E78}"
