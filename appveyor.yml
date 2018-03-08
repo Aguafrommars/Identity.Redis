@@ -9,7 +9,7 @@ init:
 install:
     - cmd: gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
-    - cmd: redis-64\tools\redis-server.exe
+    - cmd: start redis-64\tools\redis-server.exe
     - cmd: nuget install JetBrains.dotCover.CommandLineTools -ExcludeVersion
     - cmd: dotnet restore
 build_script:
