@@ -31,7 +31,7 @@ namespace IdentitySample
 
             // Add framework services.
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddRedisStores(Configuration.GetValue<string>("RedisOptions:HostAndPort"))
+                .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"))
                 .AddDefaultTokenProviders();
 
             var twitterConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"];

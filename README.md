@@ -1,7 +1,7 @@
 # Identity.Redis
-[ASP.NET Identity](https://github.com/aspnet/identity) stores implementation for Redis
+[ASP.NET Identity](https://github.com/aspnet/identity) Redis Provider
 
-[![Build status](https://ci.appveyor.com/api/projects/status/h3n8dna94b156o58/branch/develop?svg=true)](https://ci.appveyor.com/project/aguacongas/identity-Redis)
+[![Build status](https://ci.appveyor.com/api/projects/status/tmh3ib2s64ay2sc7?svg=true)](https://ci.appveyor.com/project/aguacongas/identity-redis)
 [![Latest Code coveragre](https://aguacongas.github.io/Identity.Redis/latest/badge_linecoverage.svg)](https://aguacongas.github.io/Identity.Redis/latest)
 
 Nuget packages
@@ -24,7 +24,39 @@ Nuget packages
 
 ## Setup
 
-Read [Authentication](https://github.com/aguacongas/Identity.Redis/wiki/Authentication) wiki page to setup stores.
+You setup Redis stores using one `AddRedisStores` extension method
+
+You can setup Redis stores with a redis configuration string:
+
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRedisStores("localhost")
+        .AddDefaultTokenProviders();
+
+Or with an Action receiving an instance of a ConfigurationOptions:
+
+
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRedisStores(options =>
+        {
+            options.EndPoints.Add("localhost:6379");
+        })
+        .AddDefaultTokenProviders();
+
+Both methods can take a `int? database` parameter to specify the Redis database to use:
+
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"), 1)
+        .AddDefaultTokenProviders();
+
+Or, you ca use `AddRedisStores`  with a `Func<IdentityProvider, IDatabase>`:
+
+    var multiplexer = ConnectionMultiplexer.Connect("localhost");
+
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRedisStores(provider => multiplexer.GetDatabase())
+        .AddDefaultTokenProviders();
+
+
 
 ## Sample
 

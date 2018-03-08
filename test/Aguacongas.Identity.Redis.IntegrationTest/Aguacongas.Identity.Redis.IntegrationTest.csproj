@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <UserSecretsId>Aguacongas.Identity.Redis.IntegrationTest</UserSecretsId>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -20,9 +19,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Aguacongas.Identity.Redis\Aguacongas.Identity.Redis.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
-  </ItemGroup>
-
 </Project>

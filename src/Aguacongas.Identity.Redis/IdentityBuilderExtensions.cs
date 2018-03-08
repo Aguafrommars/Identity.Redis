@@ -51,8 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     var options = provider.GetRequiredService<IOptions<ConfigurationOptions>>().Value;
                     var multiplexer = provider.GetRequiredService<IConnectionMultiplexer>();
-                    return multiplexer.GetDatabase(database.HasValue ? database.Value : 
-                        options.DefaultDatabase.HasValue ? options.DefaultDatabase.Value : -1);
+                    return multiplexer.GetDatabase(database ?? (options.DefaultDatabase ?? -1));
                 });
         }
 
@@ -76,10 +75,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder
                 .AddRedisStores(provider =>
                 {
-                    var multiplexer = ConnectionMultiplexer.Connect(configuration, log);
-                    return multiplexer.GetDatabase(database.HasValue ? database.Value : -1);
+                    var multiplexer = provider.GetRequiredService<IConnectionMultiplexer>();
+                    return multiplexer.GetDatabase(database ?? -1);
                 });
         }
+
         private static void AddStores(IServiceCollection services, Type userType, Type roleType, Func<IServiceProvider, IDatabase> getDatabase)
         {
             var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<>));

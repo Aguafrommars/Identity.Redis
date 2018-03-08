@@ -291,7 +291,6 @@ __pycache__/
 .vscode
 
 /coverage
-/test/testsettings.json
 /JetBrains.dotCover.CommandLineTools/tools
 /latest
 *.snapshot

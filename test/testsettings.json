@@ -1,0 +1,5 @@
+{
+    "RedisOptions": {
+        "EndPoints": [ "localhost:6379" ]
+    }
+}
