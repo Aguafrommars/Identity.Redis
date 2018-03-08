@@ -43,7 +43,7 @@ on_success:
     - git config --global user.email "aguacongas@gmail.com"
     - git config --global user.name "Aguacongas"
     - git checkout gh-pages
-    - rmdir /S /Q latest
+    - IF EXIST latest ( rmdir /S /Q latest )
     - move coverage\docs latest
     - git add latest
     - git commit latest -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
