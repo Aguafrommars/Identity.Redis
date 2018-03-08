@@ -30,7 +30,14 @@ namespace IdentitySample
         {
 
             // Add framework services.
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddLogging(builder =>
+                {
+                    builder.AddDebug()
+                        .AddConsole()
+                        .SetMinimumLevel(LogLevel.Warning)
+                        .AddFilter("Aguacongas.Identity.Redis", LogLevel.Trace);
+                })
+                .AddIdentity<ApplicationUser, IdentityRole>()
                 .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"))
                 .AddDefaultTokenProviders();
 

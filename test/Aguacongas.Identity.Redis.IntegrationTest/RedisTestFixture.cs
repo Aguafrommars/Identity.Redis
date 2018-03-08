@@ -14,8 +14,7 @@ namespace Aguacongas.Identity.Redis.IntegrationTest
         public RedisTestFixture()
         {
             var builder = new ConfigurationBuilder();
-            Configuration = builder.AddUserSecrets<UserStoreTest>()
-                .AddEnvironmentVariables()
+            Configuration = builder
                 .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
                 .Build();
 

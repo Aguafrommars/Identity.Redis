@@ -32,7 +32,7 @@ You can setup Redis stores with a redis configuration string:
         .AddRedisStores("localhost")
         .AddDefaultTokenProviders();
 
-Or with an Action receiving an instance of a ConfigurationOptions:
+Or with an `Action` receiving an instance of a `StackExchange.Redis.ConfigurationOptions`:
 
 
     services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -48,7 +48,7 @@ Both methods can take a `int? database` parameter to specify the Redis database 
         .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"), 1)
         .AddDefaultTokenProviders();
 
-Or, you ca use `AddRedisStores`  with a `Func<IdentityProvider, IDatabase>`:
+Or, you can use `AddRedisStores` with a `Func<IdentityProvider, StackExchange.Redis.IDatabase>`:
 
     var multiplexer = ConnectionMultiplexer.Connect("localhost");
 
@@ -56,7 +56,19 @@ Or, you ca use `AddRedisStores`  with a `Func<IdentityProvider, IDatabase>`:
         .AddRedisStores(provider => multiplexer.GetDatabase())
         .AddDefaultTokenProviders();
 
+### Logging
 
+A logger is automaticaly injected to the underlying `StackExchange.Redis.ConnectionMultiplexer` by `AddRedisStores` methods.  
+This logger write traces, (LogLevel =  `LogLevel.Trace`), to enable it add a filter to your logging configuration:
+
+    services.AddLogging(builder =>
+    {
+        builder.AddDebug()
+            .AddConsole()
+            .AddFilter("Aguacongas.Identity.Redis", LogLevel.Trace);
+    })
+
+> Obviously, if you use `AddRedisStores` with a `Func<IdentityProvider, StackExchange.Redis.IDatabase>` the logger is not injected automaticaly.
 
 ## Sample
 

@@ -13,13 +13,13 @@ namespace Aguacongas.Identity.Redis.Test
         public void AddRedisStores_with_ConfigurationStringTest()
         {
             var builder = new ConfigurationBuilder();
-            var configuration = builder.AddUserSecrets<IdentityBuilderExtensionsTest>()
-                .AddEnvironmentVariables()
+            var configuration = builder
                 .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
                 .Build();
 
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddLogging()
+                .AddIdentity<IdentityUser, IdentityRole>()
                 .AddRedisStores("localhost");
 
             var provider = services.BuildServiceProvider();
@@ -32,7 +32,8 @@ namespace Aguacongas.Identity.Redis.Test
         public void AddRedisStores_with_ConfigurationOptionsTest()
         {
             var services = new ServiceCollection();
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddLogging()
+                .AddIdentity<IdentityUser, IdentityRole>()
                 .AddRedisStores(options =>
                 {
                     options.EndPoints.Add("localhost");
@@ -52,7 +53,9 @@ namespace Aguacongas.Identity.Redis.Test
 
             builder.AddRedisStores("localhost");
 
-            var provider = services.BuildServiceProvider();
+            var provider = services.AddLogging()
+                .BuildServiceProvider();
+
             provider.GetRequiredService<IUserStore<IdentityUser>>();
         }
     }

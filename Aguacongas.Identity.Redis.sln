@@ -9,11 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2068ADBE-B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aguacongas.Identity.Redis.Test", "test\Aguacongas.Identity.Redis.Test\Aguacongas.Identity.Redis.Test.csproj", "{5CD874F7-DD16-42CD-B60E-62BB8BBCCC31}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{957EC864-21C0-4964-A1F0-32F39E538B07}"
-	ProjectSection(SolutionItems) = preProject
-		cover.cmd = cover.cmd
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB8393D5-3F29-48B1-B52C-09E881D2EDC3}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml

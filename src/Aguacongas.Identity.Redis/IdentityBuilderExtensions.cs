@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -34,9 +35,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
         /// <param name="configure">Action to configure <see cref="ConfigurationOptions"/></param>
         /// <param name="database">(Optional) The redis database to use</param>
-        /// <param name="log">(Optional) a <see cref="TextWriter"/> to write log</param>
         /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Action<ConfigurationOptions> configure, int? database = null, TextWriter log = null)
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, Action<ConfigurationOptions> configure, int? database = null)
         {
             var services = builder.Services;
 
@@ -44,7 +44,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddSingleton<IConnectionMultiplexer>(provider =>
                 {
                     var options = provider.GetRequiredService<IOptions<ConfigurationOptions>>().Value;
-                    return ConnectionMultiplexer.Connect(options, log);
+                    var redisLogger = CreateLogger(provider);
+                    return ConnectionMultiplexer.Connect(options, redisLogger);
                 });
 
             return builder.AddRedisStores(provider =>
@@ -63,14 +64,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="database">(Optional) The redis database to use</param>
         /// <param name="log">(Optional) a <see cref="TextWriter"/> to write log</param>
         /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string configuration, int? database = null, TextWriter log = null)
+        public static IdentityBuilder AddRedisStores(this IdentityBuilder builder, string configuration, int? database = null)
         {
             var services = builder.Services;
 
             services.AddSingleton<IConnectionMultiplexer>(provider =>
-                {
-                    return ConnectionMultiplexer.Connect(configuration, log);
-                });
+            {
+                var redisLogger = CreateLogger(provider);
+
+                return ConnectionMultiplexer.Connect(configuration, redisLogger);
+            });
 
             return builder
                 .AddRedisStores(provider =>
@@ -78,6 +81,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     var multiplexer = provider.GetRequiredService<IConnectionMultiplexer>();
                     return multiplexer.GetDatabase(database ?? -1);
                 });
+        }
+
+        private static RedisLogger CreateLogger(IServiceProvider provider)
+        {
+            var logger = provider.GetService<ILogger<RedisLogger>>();
+            var redisLogger = logger != null ? new RedisLogger(logger) : null;
+            return redisLogger;
         }
 
         private static void AddStores(IServiceCollection services, Type userType, Type roleType, Func<IServiceProvider, IDatabase> getDatabase)
