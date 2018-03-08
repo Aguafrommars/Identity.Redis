@@ -22,7 +22,7 @@ build_script:
 test_script:
 - cmd: publish.cmd
 artifacts:
-    - path: src/**/*.nupkg
+    - path: artifacts/**/*.nupkg
       name: nuget    
 on_success:
     - git config --global credential.helper store
@@ -47,7 +47,7 @@ deploy:
     - provider: GitHub
       auth_token:
         secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-      draft: false
+      draft: true
       prerelease: true
       release: $(GitVersion_SemVer)
       on:
@@ -56,8 +56,8 @@ deploy:
     - provider: GitHub
       auth_token:
         secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-      draft: false
-      prerelease: true
+      draft: true
+      prerelease: false
       release: $(GitVersion_SemVer)
       on:
         branch: 
