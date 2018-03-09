@@ -296,3 +296,4 @@ __pycache__/
 *.snapshot
 /redis-64/tools
 /ReportGenerator
+/GitVersion.CommandLine/tools
