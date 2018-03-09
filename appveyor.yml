@@ -14,7 +14,7 @@ init:
 install:
     - sh: sudo apt -y install nuget
     - sh: nuget install GitVersion.CommandLine -ExcludeVersion
-    - sh: mono GitVersion.CommandLine/tools GitVersion.exe /l console /output buildserver
+    - sh: mono GitVersion.CommandLine/tools/GitVersion.exe /l console /output buildserver
     - cmd: gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
