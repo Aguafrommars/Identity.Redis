@@ -6,9 +6,8 @@ if ($isLinux) {
 		   -Or $_.Name -like "*.Test.csproj" `
 		 } `
 	| % { 
-		$testArgs = "test " + $_.FullName
-		Write-Host "testargs" $testArgs
-		dotnet $testArgs
+		cd $_.DirectoryName
+		dotnet test
 	
 		if ($LASTEXITCODE -ne 0) {
 			$result = $LASTEXITCODE
