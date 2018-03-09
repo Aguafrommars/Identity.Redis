@@ -23,8 +23,7 @@ install:
     - cmd: nuget install ReportGenerator -ExcludeVersion
     - dotnet restore
 build_script:
-- cmd: build.cmd
-- sh: powershell ./build-linux.ps1
+- ps: ./build.ps1
 test_script:
 - cmd: publish.cmd
 artifacts:
