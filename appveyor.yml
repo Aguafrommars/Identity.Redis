@@ -4,15 +4,15 @@ branches:
   except:
   - gh-pages
 image: 
-- Visual Studio 2017
 - Ubuntu
+- Visual Studio 2017
 environment:
   access_token:
     secure: yQcU3EbE3/jaIhwn6e+n76xzcQ+tGXXdIZAmA3Z8ssj5IEYPehthJkLYhhNEmw21
 init:
     - cmd: git config --global core.autocrlf true
 install:
-    - sh: sudo apt install nuget
+    - sh: sudo apt -y install nuget
     - sh: nuget install GitVersion.CommandLine -ExcludeVersion
     - sh: mono GitVersion.CommandLine/tools GitVersion.exe /l console /output buildserver
     - cmd: gitversion /l console /output buildserver
