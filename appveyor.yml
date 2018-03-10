@@ -27,18 +27,12 @@ build_script:
 - ps: ./build.ps1
 test_script:
 - cmd: publish.cmd
-for:
--
-  image:
-    except:
-    - Unbuntu
-
-  artifacts:
+artifacts:
     - path: artifacts/**/*.nupkg
       name: nuget    
-  on_success:
+on_success:
     - cmd: git config --global credential.helper store
-    - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+    - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n" }
     - cmd: git config --global user.email "aguacongas@gmail.com"
     - cmd: git config --global user.name "Aguacongas"
     - cmd: git stash
@@ -48,7 +42,7 @@ for:
     - cmd: git add latest
     - cmd: git commit latest -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
     - cmd: git push
-  deploy:
+deploy:
     - provider: NuGet
       api_key:
         secure: 23wPDdRicGt2vZuJ8vd9TRBKmqjHkx5WjzZmKvyxd5j0fNPedjUScRTj/rT0ObJa
@@ -56,6 +50,7 @@ for:
         branch: 
             - master
             - /release*/
+        CI_WINDOWS: true
     - provider: GitHub
       auth_token:
         secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
@@ -65,6 +60,7 @@ for:
       on:
         branch: 
             - /release*/
+        CI_WINDOWS: true
     - provider: GitHub
       auth_token:
         secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
@@ -72,18 +68,17 @@ for:
       prerelease: false
       release: $(GitVersion_SemVer)
       on:
-        branch: 
+        branch:             
             - master
+        CI_WINDOWS: true
+for:
 -
-  image:
-    except:
-    - Unbuntu
   branches:
     only:
       - master
   on_success:
       - git config --global credential.helper store
-      - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+      - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n" }
       - git config --global user.email "aguacongas@gmail.com"
       - git config --global user.name "Aguacongas"
       - git checkout gh-pages
@@ -93,3 +88,7 @@ for:
       - git add %GITVERSION_NuGetVersion%
       - git commit %GITVERSION_NuGetVersion% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
       - git push
+-
+  branches:
+    except:
+      - master
