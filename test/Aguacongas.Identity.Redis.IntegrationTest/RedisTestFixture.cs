@@ -15,7 +15,7 @@ namespace Aguacongas.Identity.Redis.IntegrationTest
         {
             var builder = new ConfigurationBuilder();
             Configuration = builder
-                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
+                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "../../../../testsettings.json"))
                 .Build();
 
             var options = new ConfigurationOptions();

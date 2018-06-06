@@ -6,21 +6,14 @@
 
 Nuget packages
 --------------
-|Aguacongas.Redis|Aguacongas.Identity.Redis|
-|:------:|:------:|
-[![][Aguacongas.Redis-badge]][Aguacongas.Redis-nuget]|[![][Aguacongas.Identity.Redis-badge]][Aguacongas.Identity.Redis-nuget]|
-[![][Aguacongas.Redis-downloadbadge]][Aguacongas.Redis-nuget]|[![][Aguacongas.Identity.Redis-downloadbadge]][Aguacongas.Identity.Redis-nuget]|
-
-
-[Aguacongas.Redis-badge]: https://img.shields.io/nuget/v/Aguacongas.Redis.svg
-[Aguacongas.Redis-downloadbadge]: https://img.shields.io/nuget/dt/Aguacongas.Redis.svg
-[Aguacongas.Redis-nuget]: https://www.nuget.org/packages/Aguacongas.Redis/
+|Aguacongas.Identity.Redis|
+|:------:|
+|[![][Aguacongas.Identity.Redis-badge]][Aguacongas.Identity.Redis-nuget]|
+|[![][Aguacongas.Identity.Redis-downloadbadge]][Aguacongas.Identity.Redis-nuget]|
 
 [Aguacongas.Identity.Redis-badge]: https://img.shields.io/nuget/v/Aguacongas.Identity.Redis.svg
 [Aguacongas.Identity.Redis-downloadbadge]: https://img.shields.io/nuget/dt/Aguacongas.Identity.Redis.svg
 [Aguacongas.Identity.Redis-nuget]: https://www.nuget.org/packages/Aguacongas.Identity.Redis/
-
-
 
 ## Setup
 

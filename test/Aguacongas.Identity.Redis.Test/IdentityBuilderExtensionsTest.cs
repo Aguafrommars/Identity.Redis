@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using System;
 using System.IO;
 using Xunit;
 
@@ -12,9 +13,10 @@ namespace Aguacongas.Identity.Redis.Test
         [Fact]
         public void AddRedisStores_with_ConfigurationStringTest()
         {
+            Console.WriteLine(Directory.GetCurrentDirectory());
             var builder = new ConfigurationBuilder();
             var configuration = builder
-                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\testsettings.json"))
+                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "../../../../testsettings.json"))
                 .Build();
 
             var services = new ServiceCollection();
