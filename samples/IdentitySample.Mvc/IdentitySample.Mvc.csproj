@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Redis" Version="0.4.1" />
   </ItemGroup>
 
   <ItemGroup>
