@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\projects\identity-redis\src\Aguacongas.Identity.Redis\RedisLogger.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Text;
+
+namespace Aguacongas.Identity.Redis
+{
+    /// &lt;summary&gt;
+    /// Redis Logger
+    /// &lt;/summary&gt;
+    public class RedisLogger : TextWriter
+    {
+        private readonly ILogger&lt;RedisLogger&gt; _logger;
+
+        public override Encoding Encoding =&gt; throw new NotImplementedException();
+
+        /// &lt;summary&gt;
+        /// Constructs a new instance of &lt;see cref=&quot;RedisLogger&quot;/&gt;.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;logger&quot;&gt;A logger&lt;/param&gt;
+        public RedisLogger(ILogger&lt;RedisLogger&gt; logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// &lt;inheritdoc /&gt;
+        public override void WriteLine(string format, object arg0)
+        {
+            _logger.LogTrace(format, arg0);
+        }
+
+        /// &lt;inheritdoc /&gt;
+        public override void WriteLine(string format, object arg0, object arg1)
+        {
+            _logger.LogTrace(format, arg0, arg1) ;
+        }
+
+        /// &lt;inheritdoc /&gt;
+        public override void WriteLine(string format, object arg0, object arg1, object arg2)
+        {
+            _logger.LogTrace(format, arg0, arg1, arg2);
+        }
+
+        /// &lt;inheritdoc /&gt;
+        public override void WriteLine(string format, params object[] arg)
+        {
+            _logger.LogTrace(format, arg);
+        }
+
+        /// &lt;inheritdoc /&gt;
+        public override void WriteLine(string value)
+        {
+            _logger.LogTrace(value);
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,46,15,81,0],[21,9,21,56,1],[22,9,22,10,1],[23,13,23,81,1],[24,9,24,10,1],[28,9,28,10,1],[29,13,29,44,1],[30,9,30,10,1],[34,9,34,10,1],[35,13,35,51,1],[36,9,36,10,1],[40,9,40,10,1],[41,13,41,56,1],[42,9,42,10,1],[46,9,46,10,0],[47,13,47,43,0],[48,9,48,10,0],[52,9,52,10,1],[53,13,53,37,1],[54,9,54,10,1]]);
+    </script>
+  </body>
+</html>
