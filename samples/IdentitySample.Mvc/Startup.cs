@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace IdentitySample
 {
@@ -41,6 +42,7 @@ namespace IdentitySample
                 .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"))
                 .AddDefaultTokenProviders();
 
+            ConnectionMultiplexer connextion;
             var twitterConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"];
             if (!string.IsNullOrEmpty(twitterConsumerKey))
             {
