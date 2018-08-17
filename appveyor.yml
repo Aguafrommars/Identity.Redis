@@ -1,5 +1,6 @@
 version: 1.0.{build}
 skip_tags: true
+stack: redis
 branches:
   except:
   - gh-pages
@@ -24,7 +25,6 @@ install:
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
-    - sh: redis-server &
     - cmd: nuget install JetBrains.dotCover.CommandLineTools -ExcludeVersion
     - cmd: nuget install ReportGenerator -ExcludeVersion
     - dotnet restore
