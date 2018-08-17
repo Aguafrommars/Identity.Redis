@@ -42,7 +42,6 @@ namespace IdentitySample
                 .AddRedisStores(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"))
                 .AddDefaultTokenProviders();
 
-            ConnectionMultiplexer connextion;
             var twitterConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"];
             if (!string.IsNullOrEmpty(twitterConsumerKey))
             {
