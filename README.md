@@ -67,3 +67,6 @@ This logger write traces, (LogLevel =  `LogLevel.Trace`), to enable it add a fil
 
 The sample is a copy of [IdentitySample.Mvc](https://github.com/aspnet/Identity/tree/dev/samples/IdentitySample.Mvc) sample using a Redis database.  
 
+## Tests
+
+This library is tested using [Microsoft.AspNetCore.Identity.Specification.Tests](https://www.nuget.org/packages/Microsoft.AspNetCore.Identity.Specification.Tests/), the shared test suite for Asp.Net Identity Core store implementations.  

@@ -1,15 +1,12 @@
+// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,6 +19,19 @@ namespace Aguacongas.Identity.Redis.IntegrationTest
         public UserStoreTest(RedisTestFixture fixture)
         {
             _fixture = fixture;
+        }
+
+        [Fact]
+        public async Task CanUpdateUserMultipleTime()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            user = await manager.FindByNameAsync(user.UserName);
+            user.PhoneNumber = "+41123456789";
+            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
+            user.PhoneNumber = "+33123456789";
+            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)

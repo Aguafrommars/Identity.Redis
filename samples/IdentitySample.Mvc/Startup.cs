@@ -1,3 +1,5 @@
+// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
 using IdentitySample.Models;
 using IdentitySample.Services;
 using Microsoft.AspNetCore.Builder;

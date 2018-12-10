@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
+using Microsoft.AspNetCore.Identity;
 using Moq;
 using StackExchange.Redis;
 using System;

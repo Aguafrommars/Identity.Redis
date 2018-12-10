@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using System;
 using System.IO;

@@ -6,7 +6,7 @@ branches:
   - gh-pages
 image: 
 - Ubuntu
-- Visual Studio 2017 Preview
+- Visual Studio 2017
 environment:
   access_token:
     secure: yQcU3EbE3/jaIhwn6e+n76xzcQ+tGXXdIZAmA3Z8ssj5IEYPehthJkLYhhNEmw21
@@ -17,15 +17,15 @@ install:
     - sh: sudo dpkg -i packages-microsoft-prod.deb
     - sh: sudo apt-get -y install apt-transport-https
     - sh: sudo apt-get update
-    - sh: sudo apt-get -y install dotnet-sdk-2.1
+    - sh: sudo apt-get -y install dotnet-sdk-2.2
     - sh: sudo apt -y install nuget
     - sh: nuget install GitVersion.CommandLine -ExcludeVersion
     - sh: mono GitVersion.CommandLine/tools/GitVersion.exe /l console /output buildserver
+    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version 2.2.100 }
     - cmd: gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
-    - cmd: nuget install JetBrains.dotCover.CommandLineTools -ExcludeVersion
     - cmd: nuget install ReportGenerator -ExcludeVersion
     - dotnet restore
 build_script:

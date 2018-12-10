@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
