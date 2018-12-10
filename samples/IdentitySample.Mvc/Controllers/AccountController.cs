@@ -1,3 +1,5 @@
+// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;

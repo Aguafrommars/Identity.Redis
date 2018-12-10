@@ -1,3 +1,5 @@
+// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using StackExchange.Redis;

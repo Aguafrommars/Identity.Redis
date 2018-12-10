@@ -1,3 +1,5 @@
+// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

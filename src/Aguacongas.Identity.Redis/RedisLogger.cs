@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// Project: aguacongas/Identity.Redis
+// Copyright (c) 2018 @Olivier Lefebvre
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Text;
