@@ -8,6 +8,8 @@ image:
 - Ubuntu
 - Visual Studio 2017
 environment:
+  GH_TOKEN:
+    secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
   access_token:
     secure: yQcU3EbE3/jaIhwn6e+n76xzcQ+tGXXdIZAmA3Z8ssj5IEYPehthJkLYhhNEmw21
 init:
@@ -57,8 +59,7 @@ deploy:
             - /release*/
         CI_WINDOWS: true
     - provider: GitHub
-      auth_token:
-        secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
+      auth_token: $(GH_TOKEN)
       draft: true
       prerelease: false
       release: $(APPVEYOR_BUILD_VERSION)
