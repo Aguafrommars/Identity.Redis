@@ -1,9 +1,13 @@
 version: 1.0.{build}
 skip_tags: true
 stack: redis, node 9
+skip_commits:
+  message: /\[chore\]/
 branches:
-  except:
-  - gh-pages
+  only:
+  - master
+  - /preview*/ 
+  - /release*/
 image: 
 - Ubuntu
 - Visual Studio 2017
