@@ -1,13 +1,19 @@
 version: 1.0.{build}
 skip_tags: true
-stack: redis
+stack: redis, node 9
+skip_commits:
+  message: /\[chore\]/
 branches:
-  except:
-  - gh-pages
+  only:
+  - master
+  - /preview*/ 
+  - /release*/
 image: 
 - Ubuntu
 - Visual Studio 2017
 environment:
+  GH_TOKEN:
+    secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
   access_token:
     secure: yQcU3EbE3/jaIhwn6e+n76xzcQ+tGXXdIZAmA3Z8ssj5IEYPehthJkLYhhNEmw21
 init:
@@ -27,7 +33,7 @@ install:
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
     - cmd: nuget install ReportGenerator -ExcludeVersion
-    - dotnet restore
+    - ps: ./appveyorinit.ps1
 build_script:
 - ps: ./build.ps1
 test_script:
@@ -57,24 +63,14 @@ deploy:
             - /release*/
         CI_WINDOWS: true
     - provider: GitHub
-      auth_token:
-        secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-      draft: true
-      prerelease: true
-      release: $(GitVersion_SemVer)
-      on:
-        branch: 
-            - /release*/
-        CI_WINDOWS: true
-    - provider: GitHub
-      auth_token:
-        secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
+      auth_token: $(GH_TOKEN)
       draft: true
       prerelease: false
-      release: $(GitVersion_SemVer)
+      release: $(APPVEYOR_BUILD_VERSION)
       on:
-        branch:             
-            - master
+        branch: 
+            - /preview*/ 
+            - /release*/
         CI_WINDOWS: true
 for:
 -
@@ -88,10 +84,10 @@ for:
       - cmd: git config --global user.name "Aguacongas"
       - cmd: git checkout gh-pages
       - cmd: git stash
-      - cmd: mkdir %GITVERSION_NuGetVersion%
-      - cmd: move coverage\docs %GITVERSION_NuGetVersion%
-      - cmd: git add %GITVERSION_NuGetVersion%
-      - cmd: git commit %GITVERSION_NuGetVersion% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
+      - cmd: mkdir %APPVEYOR_BUILD_VERSION%
+      - cmd: move coverage\docs %APPVEYOR_BUILD_VERSION%
+      - cmd: git add %APPVEYOR_BUILD_VERSION%
+      - cmd: git commit %APPVEYOR_BUILD_VERSION% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
       - cmd: git push
 -
   branches:
