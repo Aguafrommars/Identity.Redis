@@ -75,6 +75,7 @@ for:
   branches:
     only:
       - master
+  on_success:
     - cmd: git config --global credential.helper store
     - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_TOKEN):x-oauth-basic@github.com`n" }
     - cmd: git config --global user.email "aguacongas@gmail.com"
