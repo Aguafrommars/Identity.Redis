@@ -1,6 +1,6 @@
 version: 1.0.{build}
 skip_tags: true
-stack: redis
+stack: redis, node 9
 branches:
   except:
   - gh-pages
@@ -27,7 +27,7 @@ install:
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
     - cmd: nuget install ReportGenerator -ExcludeVersion
-    - dotnet restore
+    - ps: ./appveyorinit.ps1
 build_script:
 - ps: ./build.ps1
 test_script:
@@ -36,8 +36,6 @@ artifacts:
     - path: artifacts/**/*.nupkg
       name: nuget    
 on_success:
-    - ps: $env:GH_TOKEN=$env:access_token
-    - ps: semantic-release -b $env:APPVEYOR_REPO_BRANCH
     - cmd: git config --global credential.helper store
     - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n" }
     - cmd: git config --global user.email "aguacongas@gmail.com"
@@ -62,21 +60,12 @@ deploy:
       auth_token:
         secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
       draft: true
-      prerelease: true
-      release: $(GitVersion_SemVer)
+      prerelease: false
+      release: $(APPVEYOR_BUILD_VERSION)
       on:
         branch: 
+            - /preview*/ 
             - /release*/
-        CI_WINDOWS: true
-    - provider: GitHub
-      auth_token:
-        secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-      draft: true
-      prerelease: false
-      release: $(GitVersion_SemVer)
-      on:
-        branch:             
-            - master
         CI_WINDOWS: true
 for:
 -
@@ -90,10 +79,10 @@ for:
       - cmd: git config --global user.name "Aguacongas"
       - cmd: git checkout gh-pages
       - cmd: git stash
-      - cmd: mkdir %GITVERSION_NuGetVersion%
-      - cmd: move coverage\docs %GITVERSION_NuGetVersion%
-      - cmd: git add %GITVERSION_NuGetVersion%
-      - cmd: git commit %GITVERSION_NuGetVersion% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
+      - cmd: mkdir %APPVEYOR_BUILD_VERSION%
+      - cmd: move coverage\docs %APPVEYOR_BUILD_VERSION%
+      - cmd: git add %APPVEYOR_BUILD_VERSION%
+      - cmd: git commit %APPVEYOR_BUILD_VERSION% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
       - cmd: git push
 -
   branches:
