@@ -4,7 +4,15 @@ if (test-path ./nextversion.txt)
     Remove-Item ./nextversion.txt
 }
 semantic-release -b $env:APPVEYOR_REPO_BRANCH -d
-$nextversion = Get-Content ./nextversion.txt
+if (test-path ./nextversion.txt)
+{
+    $nextversion = Get-Content ./nextversion.txt
+}
+else 
+{
+    $nextversion = $env:GitVersion_MajorMinorPatch
+}
+
 if (![string]::IsNullOrEmpty($env:GitVersion_PreReleaseLabel))
 {
     $nextversion = "$nextversion-$env:GitVersion_PreReleaseLabel$env:GitVersion_CommitsSinceVersionSourcePadded"
