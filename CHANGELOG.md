@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/aguacongas/Identity.Redis/compare/1.1.2...1.2.0) (2018-12-15)
+
+
+### Features
+
+* update for asp.net 2.2 ([a77a1c9](https://github.com/aguacongas/Identity.Redis/commit/a77a1c9))
+
 ##[1.1.2](https://github.com/aguacongas/Identity.Redis/releases/edtagit/1.1.2#) (Dec. 12 2018)
 
 ### Fix
