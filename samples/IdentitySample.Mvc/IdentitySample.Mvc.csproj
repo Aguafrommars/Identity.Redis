@@ -7,10 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aguacongas.Identity.Redis" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Aguacongas.Identity.Redis\Aguacongas.Identity.Redis.csproj" />
   </ItemGroup>
 </Project>
