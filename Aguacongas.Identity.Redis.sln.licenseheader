@@ -1,9 +1,0 @@
-extensions: designer.cs generated.cs
-extensions: .cs .cpp .h
-// Project: aguacongas/Identity.Redis
-// Copyright (c) 2018 @Olivier Lefebvre
-extensions:  .xml .config .xsd
-<!--
-Project: aguacongas/Identity.Redis
-Copyright (c) 2018 @Olivier Lefebvre
--->

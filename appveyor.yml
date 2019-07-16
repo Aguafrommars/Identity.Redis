@@ -24,10 +24,11 @@ install:
     - sh: sudo apt-get update
     - sh: sudo chmod +x ./dotnet-install.sh
     - sh: sudo ./dotnet-install.sh -Channel Current -Version $donetsdk -InstallDir ./dotnetsdk -NoPath
+    - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
     - sh: nuget install GitVersion.CommandLine -ExcludeVersion
     - sh: mono GitVersion.CommandLine/tools/GitVersion.exe /l console /output buildserver
-    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version $env:dotnetsdk }
+    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version $dotnetsdk }
     - cmd: gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
