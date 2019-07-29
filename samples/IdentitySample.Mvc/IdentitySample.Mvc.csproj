@@ -8,6 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Aguacongas.Identity.Redis" Version="1.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="3.0.0-preview6.19307.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="3.0.0-preview7.19365.7" />
   </ItemGroup>
 </Project>
