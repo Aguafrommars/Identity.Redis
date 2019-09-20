@@ -1,5 +1,5 @@
 # Identity.Redis
-[ASP.NET Identity](https://github.com/aspnet/identity) Redis Provider
+[ASP.NET Identity](https://github.com/aspnet/AspNetCore/tree/master/src/Identity) Redis Provider
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tmh3ib2s64ay2sc7?svg=true)](https://ci.appveyor.com/project/aguacongas/identity-redis)
 [![Latest Code coveragre](https://aguacongas.github.io/Identity.Redis/latest/badge_linecoverage.svg)](https://aguacongas.github.io/Identity.Redis/latest)
