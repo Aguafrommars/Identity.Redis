@@ -10,11 +10,11 @@ branches:
   - /release*/
 image: 
 - Ubuntu
-- Visual Studio 2017
+- Visual Studio 2019
 environment:
   GH_TOKEN:
     secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-  donetsdk: 3.0.100-rc1-014190
+  donetsdk: 3.0.100
 init:
     - cmd: git config --global core.autocrlf true
 install:
@@ -26,10 +26,10 @@ install:
     - sh: sudo ./dotnet-install.sh -Channel Current -Version $donetsdk -InstallDir ./dotnetsdk -NoPath
     - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
-    - sh: nuget install GitVersion.CommandLine -ExcludeVersion
+    - ps: nuget install GitVersion.CommandLine -ExcludeVersion
     - sh: mono GitVersion.CommandLine/tools/GitVersion.exe /l console /output buildserver
-    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version 3.0.100-rc1-014190 }
-    - cmd: gitversion /l console /output buildserver
+    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version 3.0.100 }
+    - cmd: GitVersion.CommandLine\tools\GitVersion.exe /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
@@ -67,11 +67,10 @@ deploy:
       auth_token: $(GH_TOKEN)
       draft: true
       prerelease: false
-      release: $(APPVEYOR_BUILD_VERSION)
+      release: $(Version)
       on:
         branch: 
             - /preview*/ 
-            - /release*/
         CI_WINDOWS: true
 for:
 -
@@ -101,10 +100,10 @@ for:
       - cmd: git config --global user.name "Aguacongas"
       - cmd: git checkout gh-pages
       - cmd: git stash
-      - cmd: mkdir %APPVEYOR_BUILD_VERSION%
-      - cmd: move coverage\docs %APPVEYOR_BUILD_VERSION%
-      - cmd: git add %APPVEYOR_BUILD_VERSION%
-      - cmd: git commit %APPVEYOR_BUILD_VERSION% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
+      - cmd: mkdir %Version%
+      - cmd: move coverage\docs %Version%
+      - cmd: git add %Version%
+      - cmd: git commit %Version% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
       - cmd: git push
 -
   branches:
