@@ -71,7 +71,6 @@ deploy:
       on:
         branch: 
             - /preview*/ 
-            - /release*/
         CI_WINDOWS: true
 for:
 -
