@@ -98,8 +98,9 @@ for:
       - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_TOKEN):x-oauth-basic@github.com`n" }
       - cmd: git config --global user.email "aguacongas@gmail.com"
       - cmd: git config --global user.name "Aguacongas"
-      - cmd: git checkout gh-pages
       - cmd: git stash
+      - cmd: git checkout gh-pages
+      - cmd: git stash apply
       - cmd: mkdir %Version%
       - cmd: move coverage\docs %Version%
       - cmd: git add %Version%
