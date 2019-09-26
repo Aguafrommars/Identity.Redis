@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/aguacongas/Identity.Redis/compare/2.0.0...3.0.0) (2019-09-26)
+
+
+### Build System
+
+* update packages ([e6bf52f](https://github.com/aguacongas/Identity.Redis/commit/e6bf52f))
+
+
+### BREAKING CHANGES
+
+* ASP.Net Core 3.0
+
 # [1.2.0](https://github.com/aguacongas/Identity.Redis/compare/1.1.2...1.2.0) (2018-12-15)
 
 
