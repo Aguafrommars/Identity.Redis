@@ -6,10 +6,9 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,8 +18,7 @@ namespace Aguacongas.Identity.Redis
     /// Creates a new instance of a persistence store for roles.
     /// </summary>
     /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
-    public class RoleStore<TRole> : RoleStore<TRole, string, IdentityUserRole<string>, IdentityRoleClaim<string>>,
-        IRoleClaimStore<TRole>
+    public class RoleStore<TRole> : RoleStore<TRole, string, IdentityUserRole<string>, IdentityRoleClaim<string>>
         where TRole : IdentityRole<string>
     {
         /// <summary>
@@ -35,8 +33,7 @@ namespace Aguacongas.Identity.Redis
     /// Creates a new instance of a persistence store for roles.
     /// </summary>
     /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
-    public class RoleStore<TRole, TKey> : RoleStore<TRole, TKey, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>>,
-        IRoleClaimStore<TRole>
+    public class RoleStore<TRole, TKey> : RoleStore<TRole, TKey, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -48,12 +45,18 @@ namespace Aguacongas.Identity.Redis
         public RoleStore(IDatabase db, IdentityErrorDescriber describer = null) : base(db, describer) { }
     }
 
+
     /// <summary>
     /// Creates a new instance of a persistence store for roles.
     /// </summary>
     /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
     /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
     /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
+    [SuppressMessage("Major Code Smell", "S2326:Unused type parameters should be removed", Justification = "Identity store implementation")]
+    [SuppressMessage("Major Code Smell", "S3881:\"IDisposable\" should be implemented correctly", Justification = "Nothing to dispose")]
+    [SuppressMessage("Major Code Smell", "S2436:Types and methods should not have too many generic parameters", Justification = "Identity store implementation")]
+    [SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "Nothing to dispose")]
+    [SuppressMessage("Critical Code Smell", "S1006:Method overrides should not change parameter defaults", Justification = "<Pending>")]
     public class RoleStore<TRole, TKey, TUserRole, TRoleClaim> :
         IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
@@ -107,27 +110,28 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role to create in the store.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous query.</returns>
-        public async virtual Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
 
             var roleId = ConvertIdToString(role.Id);
             role.ConcurrencyStamp = "0";
 
             var tran = _db.CreateTransaction();
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable S1854 // Dead stores should be removed
             var roleNotExistsCondition = tran.AddCondition(Condition.HashNotExists(RolesRedisKey, roleId));
+#pragma warning restore S1854 // Dead stores should be removed
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             tran.HashSetAsync(RolesRedisKey, roleId, JsonConvert.SerializeObject(role));
             tran.HashSetAsync(RolesConcurencyStampIndexKey, roleId, GetConcurrencyStamp(role));
             tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(new IdentityError
                 {
@@ -145,14 +149,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role to update in the store.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous query.</returns>
-        public async virtual Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
 
             var roleId = ConvertIdToString(role.Id);
 
@@ -164,7 +166,7 @@ namespace Aguacongas.Identity.Redis
             tran.HashSetAsync(RolesNameIndexKey, role.NormalizedName, roleId);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
@@ -179,14 +181,11 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role to delete from the store.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous query.</returns>
-        public async virtual Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
 
             var roleId = ConvertIdToString(role.Id);
 
@@ -197,7 +196,7 @@ namespace Aguacongas.Identity.Redis
             tran.HashDeleteAsync(RolesNameIndexKey, role.NormalizedName);
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
@@ -211,14 +210,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role whose ID should be returned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the ID of the role.</returns>
-        public virtual Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
             return Task.FromResult(ConvertIdToString(role.Id));
         }
 
@@ -228,14 +225,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role whose name should be returned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the name of the role.</returns>
-        public virtual Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
             return Task.FromResult(role.Name);
         }
 
@@ -246,14 +241,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="roleName">The name of the role.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public virtual Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
             role.Name = roleName;
             return Task.CompletedTask;
         }
@@ -261,43 +254,44 @@ namespace Aguacongas.Identity.Redis
         /// <summary>
         /// Finds the role who has the specified ID as an asynchronous operation.
         /// </summary>
-        /// <param name="id">The role ID to look for.</param>
+        /// <param name="roleId">The role ID to look for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-        public virtual async Task<TRole> FindByIdAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            var response = await _db.HashGetAsync(RolesRedisKey, id);
+            var response = await _db.HashGetAsync(RolesRedisKey, roleId).ConfigureAwait(false);
             if (response.HasValue)
             {
                 var role = JsonConvert.DeserializeObject<TRole>(response);
-                role.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, id);
+                role.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, roleId)
+                    .ConfigureAwait(false);
 
                 return role;
             }
-            return default(TRole);
+            return default;
         }
 
         /// <summary>
         /// Finds the role who has the specified normalized name as an asynchronous operation.
         /// </summary>
-        /// <param name="normalizedName">The normalized role name to look for.</param>
+        /// <param name="normalizedRoleName">The normalized role name to look for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-        public virtual async Task<TRole> FindByNameAsync(string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            var roleId = await _db.HashGetAsync(RolesNameIndexKey, normalizedName);
+            var roleId = await _db.HashGetAsync(RolesNameIndexKey, normalizedRoleName).ConfigureAwait(false);
             if (!roleId.HasValue)
             {
-                return default(TRole);
+                return default;
             }
 
-            return await FindByIdAsync(roleId, cancellationToken);
+            return await FindByIdAsync(roleId, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -306,14 +300,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role whose normalized name should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the name of the role.</returns>
-        public virtual Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
             return Task.FromResult(role.NormalizedName);
         }
 
@@ -324,14 +316,12 @@ namespace Aguacongas.Identity.Redis
         /// <param name="normalizedName">The normalized name to set</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public virtual Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
+            AssertNotNull(role, nameof(role));
+
             role.NormalizedName = normalizedName;
             return Task.CompletedTask;
         }
@@ -358,18 +348,14 @@ namespace Aguacongas.Identity.Redis
         /// <param name="role">The role whose claims should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the claims granted to a role.</returns>
-        public async virtual Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
-
+            AssertNotNull(role, nameof(role));
 
             var roleId = ConvertIdToString(role.Id);
 
-            var response = await _db.HashGetAsync(RoleClaimsRedisKey, roleId);
+            var response = await _db.HashGetAsync(RoleClaimsRedisKey, roleId).ConfigureAwait(false);
             if (response.HasValue)
             {
                 var claims = JsonConvert.DeserializeObject<List<TRoleClaim>>(response);
@@ -386,26 +372,21 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claim">The claim to add to the role.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public virtual async Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
+            AssertNotNull(role, nameof(role));
+            AssertNotNull(claim, nameof(claim));
 
-            var roleClaims = await GetRoleClaimsAsync(role);
+            var roleClaims = await GetRoleClaimsAsync(role).ConfigureAwait(false);
 
             roleClaims.Add(CreateRoleClaim(role, claim));
 
             var roleId = ConvertIdToString(role.Id);
 
             await Task.WhenAll(_db.HashSetAsync(RoleClaimsRedisKey, roleId, JsonConvert.SerializeObject(roleClaims)),
-                _db.HashSetAsync(RoleClaimsKeyPrefix + claim.Type, roleId, claim.Value));
+                _db.HashSetAsync(RoleClaimsKeyPrefix + claim.Type, roleId, claim.Value))
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -415,26 +396,21 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claim">The claim to remove from the role.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async virtual Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public async virtual Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
-            if (role == null)
-            {
-                throw new ArgumentNullException(nameof(role));
-            }
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
+            AssertNotNull(role, nameof(role));
+            AssertNotNull(claim, nameof(claim));
 
-            var roleClaims = await GetRoleClaimsAsync(role);
+            var roleClaims = await GetRoleClaimsAsync(role).ConfigureAwait(false);
 
             roleClaims.RemoveAll(c => c.ClaimType == claim.Type && c.ClaimValue == claim.Value);
 
             var roleId = ConvertIdToString(role.Id);
 
             await Task.WhenAll(_db.HashSetAsync(RoleClaimsRedisKey, roleId, JsonConvert.SerializeObject(roleClaims)),
-                _db.HashDeleteAsync(RoleClaimsKeyPrefix + claim.Type, roleId));
+                _db.HashDeleteAsync(RoleClaimsKeyPrefix + claim.Type, roleId))
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -455,7 +431,7 @@ namespace Aguacongas.Identity.Redis
         {
             if (id == null)
             {
-                return default(TKey);
+                return default;
             }
             return (TKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
         }
@@ -467,7 +443,7 @@ namespace Aguacongas.Identity.Redis
         /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
         public virtual string ConvertIdToString(TKey id)
         {
-            if (object.Equals(id, default(TKey)))
+            if (Equals(id, default(TKey)))
             {
                 return null;
             }
@@ -478,7 +454,7 @@ namespace Aguacongas.Identity.Redis
         {
             var roleId = ConvertIdToString(role.Id);
 
-            var response = await _db.HashGetAsync(RoleClaimsRedisKey, roleId);
+            var response = await _db.HashGetAsync(RoleClaimsRedisKey, roleId).ConfigureAwait(false);
             if (response.HasValue)
             {
                 return JsonConvert.DeserializeObject<List<TRoleClaim>>(response);
@@ -494,6 +470,14 @@ namespace Aguacongas.Identity.Redis
                 return stamp;
             }
             return null;
+        }
+
+        private static void AssertNotNull(object p, string pName)
+        {
+            if (p == null)
+            {
+                throw new ArgumentNullException(pName);
+            }
         }
     }
 }

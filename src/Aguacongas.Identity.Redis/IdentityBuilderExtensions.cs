@@ -1,14 +1,13 @@
 // Project: aguacongas/Identity.Redis
 // Copyright (c) 2018 @Olivier Lefebvre
-using System;
-using System.Reflection;
 using Aguacongas.Identity.Redis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using System.IO;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

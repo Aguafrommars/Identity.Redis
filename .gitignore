@@ -297,3 +297,6 @@ __pycache__/
 /redis-64/tools
 /ReportGenerator
 /GitVersion.CommandLine/tools
+/.sonarlint
+/.sonarqube
+*.ruleset

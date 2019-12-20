@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -60,11 +60,13 @@ namespace Aguacongas.Identity.Redis
         public UserStore(IDatabase db, UserOnlyStore<TUser, string> userOnlyStore, IdentityErrorDescriber describer = null) : base(db, userOnlyStore, describer) { }
     }
 
+
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
     /// <typeparam name="TRole">The type representing a role.</typeparam>
+    [SuppressMessage("Major Code Smell", "S2436:Types and methods should not have too many generic parameters", Justification = "Identity store implementation")]
     public class UserStore<TUser, TRole, TKey> : UserStore<TUser, TKey, TRole, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>, IdentityRoleClaim<TKey>>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
@@ -78,6 +80,7 @@ namespace Aguacongas.Identity.Redis
         public UserStore(IDatabase db, UserOnlyStore<TUser, TKey> userOnlyStore, IdentityErrorDescriber describer = null) : base(db, userOnlyStore, describer) { }
     }
 
+
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
@@ -88,6 +91,7 @@ namespace Aguacongas.Identity.Redis
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
     /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
+    [SuppressMessage("Major Code Smell", "S2436:Types and methods should not have too many generic parameters", Justification = "Identiy store implementation")]
     public class UserStore<TUser, TKey, TRole, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         RedisUserStoreBase<TUser, TKey, TRole, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>
         where TUser : IdentityUser<TKey>
@@ -130,7 +134,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the creation operation.</returns>
-        public override Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default)
             => _userOnlyStore.CreateAsync(user, cancellationToken);
 
         /// <summary>
@@ -139,7 +143,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the update operation.</returns>
-        public override Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default)
             => _userOnlyStore.UpdateAsync(user, cancellationToken);
 
         /// <summary>
@@ -148,7 +152,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the update operation.</returns>
-        public override Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default)
             => _userOnlyStore.DeleteAsync(user, cancellationToken);
 
         /// <summary>
@@ -159,7 +163,7 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
         /// </returns>
-        public override Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default)
             => _userOnlyStore.FindByIdAsync(userId, cancellationToken);
 
         /// <summary>
@@ -170,75 +174,69 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="normalizedUserName"/> if it exists.
         /// </returns>
-        public override Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default)
             => _userOnlyStore.FindByNameAsync(normalizedUserName, cancellationToken);
 
         /// <summary>
-        /// Adds the given <paramref name="normalizedRoleName"/> to the specified <paramref name="user"/>.
+        /// Adds the given <paramref name="roleName"/> to the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the role to.</param>
-        /// <param name="normalizedRoleName">The role to add.</param>
+        /// <param name="roleName">The role to add.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async override Task AddToRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (string.IsNullOrWhiteSpace(normalizedRoleName))
-            {
-                throw new ArgumentNullException(nameof(normalizedRoleName));
-            }
-            var roleEntity = await FindRoleAsync(normalizedRoleName, cancellationToken);
+            AssertNotNull(user, nameof(user));
+            AssertNotNullOrEmpty(roleName, nameof(roleName));
+
+            var roleEntity = await FindRoleAsync(roleName, cancellationToken)
+                .ConfigureAwait(false);
             if (roleEntity == null)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "RoleNotFound {0}", normalizedRoleName));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "RoleNotFound {0}", roleName));
             }
 
             var userId = ConvertIdToString(user.Id);
 
-            var roles = await GetUserRolesAsync(userId);
+            var roles = await GetUserRolesAsync(userId).ConfigureAwait(false);
             roles.Add(CreateUserRole(user, roleEntity));
 
             await Task.WhenAll(_db.HashSetAsync(UserRolesRedisKey, userId, JsonConvert.SerializeObject(roles)),
-                _db.HashSetAsync(UserRolesNameIndexKey + normalizedRoleName, userId, normalizedRoleName));
+                _db.HashSetAsync(UserRolesNameIndexKey + roleName, userId, roleName))
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Removes the given <paramref name="normalizedRoleName"/> from the specified <paramref name="user"/>.
+        /// Removes the given <paramref name="roleName"/> from the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to remove the role from.</param>
-        /// <param name="normalizedRoleName">The role to remove.</param>
+        /// <param name="roleName">The role to remove.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async override Task RemoveFromRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (string.IsNullOrWhiteSpace(normalizedRoleName))
-            {
-                throw new ArgumentNullException(nameof(normalizedRoleName));
-            }
-            var roleEntity = await FindRoleAsync(normalizedRoleName, cancellationToken);
+            AssertNotNull(user, nameof(user));
+            AssertNotNullOrEmpty(roleName, nameof(roleName));
+
+            var roleEntity = await FindRoleAsync(roleName, cancellationToken)
+                .ConfigureAwait(false);
             if (roleEntity == null)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "RoleNotFound {0}", normalizedRoleName));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "RoleNotFound {0}", roleName));
             }
 
             var userId = ConvertIdToString(user.Id);
 
-            var roles = await GetUserRolesAsync(userId);
+            var roles = await GetUserRolesAsync(userId).ConfigureAwait(false);
             roles.RemoveAll(r => r.RoleId.Equals(roleEntity.Id));
 
             await Task.WhenAll(_db.HashSetAsync(UserRolesRedisKey, userId, JsonConvert.SerializeObject(roles)),
-                _db.HashDeleteAsync(UserRolesNameIndexKey + normalizedRoleName, userId));
+                _db.HashDeleteAsync(UserRolesNameIndexKey + roleName, userId))
+                .ConfigureAwait(false);
         }
 
 
@@ -248,26 +246,24 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user whose roles should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the roles the user is a member of.</returns>
-        public override async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
-            var userRoles = await GetUserRolesAsync(userId);
-            var taskList = new List<Task<TRole>>(userRoles.Count());
+            var userRoles = await GetUserRolesAsync(userId).ConfigureAwait(false);
+            var taskList = new List<Task<TRole>>(userRoles.Count);
 
             foreach(var userRole in userRoles)
             {
                 taskList.Add(FindRoleByIdAsync(ConvertIdToString(userRole.RoleId), cancellationToken));
             }
 
-            var result = await Task.WhenAll(taskList);
+            var result = await Task.WhenAll(taskList)
+                .ConfigureAwait(false);
 
             return result.Where(r => r != null)
                 .Select(r => r.Name)
@@ -275,29 +271,25 @@ namespace Aguacongas.Identity.Redis
         }
 
         /// <summary>
-        /// Returns a flag indicating if the specified user is a member of the give <paramref name="normalizedRoleName"/>.
+        /// Returns a flag indicating if the specified user is a member of the give <paramref name="roleName"/>.
         /// </summary>
         /// <param name="user">The user whose role membership should be checked.</param>
-        /// <param name="normalizedRoleName">The role to check membership of</param>
+        /// <param name="roleName">The role to check membership of</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user is a member of the given group. If the 
         /// user is a member of the group the returned value with be true, otherwise it will be false.</returns>
-        public override async Task<bool> IsInRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (string.IsNullOrWhiteSpace(normalizedRoleName))
-            {
-                throw new ArgumentNullException(nameof(normalizedRoleName));
-            }
-            var role = await FindRoleAsync(normalizedRoleName, cancellationToken);
+            AssertNotNull(user, nameof(user));
+            AssertNotNullOrEmpty(roleName, nameof(roleName));
+
+            var role = await FindRoleAsync(roleName, cancellationToken).ConfigureAwait(false);
             if (role != null)
             {                
-                var userRole = await FindUserRoleAsync(ConvertIdToString(user.Id), ConvertIdToString(role.Id), cancellationToken);
+                var userRole = await FindUserRoleAsync(ConvertIdToString(user.Id), ConvertIdToString(role.Id), cancellationToken)
+                        .ConfigureAwait(false);
                 return userRole != null;
             }
             return false;
@@ -309,7 +301,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user whose claims should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the claims granted to a user.</returns>
-        public override Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default)
             => _userOnlyStore.GetClaimsAsync(user, cancellationToken);
 
         /// <summary>
@@ -319,7 +311,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claims">The claim to add to the user.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public override Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default)
             => _userOnlyStore.AddClaimsAsync(user, claims, cancellationToken);
 
         /// <summary>
@@ -330,7 +322,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="newClaim">The new claim replacing the <paramref name="claim"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public override Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default)
             => _userOnlyStore.ReplaceClaimAsync(user, claim, newClaim, cancellationToken);
 
         /// <summary>
@@ -340,7 +332,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claims">The claim to remove.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public override Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default)
             => _userOnlyStore.RemoveClaimsAsync(user, claims, cancellationToken);
 
         /// <summary>
@@ -351,7 +343,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public override Task AddLoginAsync(TUser user, UserLoginInfo login,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
             => _userOnlyStore.AddLoginAsync(user, login, cancellationToken);
 
         /// <summary>
@@ -363,7 +355,7 @@ namespace Aguacongas.Identity.Redis
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public override Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
             => _userOnlyStore.RemoveLoginAsync(user, loginProvider, providerKey, cancellationToken);
 
         /// <summary>
@@ -374,7 +366,7 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> for the asynchronous operation, containing a list of <see cref="UserLoginInfo"/> for the specified <paramref name="user"/>, if any.
         /// </returns>
-        public override Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default)
             => _userOnlyStore.GetLoginsAsync(user, cancellationToken);
 
         /// <summary>
@@ -387,7 +379,7 @@ namespace Aguacongas.Identity.Redis
         /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
         /// </returns>
         public override Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
             => _userOnlyStore.FindByLoginAsync(loginProvider, providerKey, cancellationToken);
 
         /// <summary>
@@ -398,7 +390,7 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
         /// </returns>
-        public override Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
             => _userOnlyStore.FindByEmailAsync(normalizedEmail, cancellationToken);
 
         /// <summary>
@@ -409,44 +401,43 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim. 
         /// </returns>
-        public override Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default)
             => _userOnlyStore.GetUsersForClaimAsync(claim, cancellationToken);
 
         /// <summary>
         /// Retrieves all users in the specified role.
         /// </summary>
-        /// <param name="normalizedRoleName">The role whose users should be retrieved.</param>
+        /// <param name="roleName">The role whose users should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
         /// The <see cref="Task"/> contains a list of users, if any, that are in the specified role. 
         /// </returns>
-        public async override Task<IList<TUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (string.IsNullOrEmpty(normalizedRoleName))
-            {
-                throw new ArgumentNullException(nameof(normalizedRoleName));
-            }
+            AssertNotNullOrEmpty(roleName, nameof(roleName));
 
-            var users = await _db.HashGetAllAsync(UserRolesNameIndexKey + normalizedRoleName);
+            var users = await _db.HashGetAllAsync(UserRolesNameIndexKey + roleName)
+                .ConfigureAwait(false);
             var taskList = new List<Task<TUser>>(users.Length);
             foreach(var user in users)
             {
                 taskList.Add(FindByIdAsync(user.Name, cancellationToken));
             }
 
-            var results = await Task.WhenAll(taskList);
+            var results = await Task.WhenAll(taskList)
+                .ConfigureAwait(false);
 
             return results.Where(u => u != null)
                 .Select(u => u)
                 .ToList();
         }
 
-        public override Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default)
              => _userOnlyStore.SetNormalizedUserNameAsync(user, normalizedName, cancellationToken);
 
-        public override Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default)
             => _userOnlyStore.SetNormalizedEmailAsync(user, normalizedEmail, cancellationToken);
 
         /// <summary>
@@ -457,13 +448,16 @@ namespace Aguacongas.Identity.Redis
         /// <returns>The role if it exists.</returns>
         protected override async Task<TRole> FindRoleAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
-            var roleId = await _db.HashGetAsync(RolesNameIndexKey, normalizedRoleName);
+            var roleId = await _db.HashGetAsync(RolesNameIndexKey, normalizedRoleName)
+                .ConfigureAwait(false);
+
             if (!roleId.HasValue)
             {
-                return default(TRole);
+                return default;
             }
 
-            return await FindRoleByIdAsync(roleId, cancellationToken);
+            return await FindRoleByIdAsync(roleId, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -475,7 +469,8 @@ namespace Aguacongas.Identity.Redis
         /// <returns>The user role if it exists.</returns>
         protected override async Task<TUserRole> FindUserRoleAsync(string userId, string roleId, CancellationToken cancellationToken)
         {
-            var userRoles = await GetUserRolesAsync(userId);
+            var userRoles = await GetUserRolesAsync(userId)
+                .ConfigureAwait(false);
             return userRoles.SingleOrDefault(r => r.RoleId.Equals(ConvertIdFromString(roleId)));
         }
 
@@ -534,31 +529,42 @@ namespace Aguacongas.Identity.Redis
             _userOnlyStore.Dispose();
         }
 
-        protected virtual async Task<TRole> FindRoleByIdAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
+        protected virtual async Task<TRole> FindRoleByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            var response = await _db.HashGetAsync(RolesRedisKey, id);
+            var response = await _db.HashGetAsync(RolesRedisKey, id)
+                .ConfigureAwait(false);
             if (response.HasValue)
             {
                 var role = JsonConvert.DeserializeObject<TRole>(response);
-                role.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, id);
+                role.ConcurrencyStamp = await _db.HashGetAsync(RolesConcurencyStampIndexKey, id)
+                    .ConfigureAwait(false);
 
                 return role;
             }
-            return default(TRole);
+            return default;
         }
 
         protected virtual async Task<List<TUserRole>> GetUserRolesAsync(string userId)
         {
-            var response = await _db.HashGetAsync(UserRolesRedisKey, userId);
+            var response = await _db.HashGetAsync(UserRolesRedisKey, userId)
+                .ConfigureAwait(false);
             if (response.HasValue)
             {
                 return JsonConvert.DeserializeObject<List<TUserRole>>(response);
             }
 
             return new List<TUserRole>();
+        }
+
+        private static void AssertNotNullOrEmpty(string p, string pName)
+        {
+            if (string.IsNullOrWhiteSpace(p))
+            {
+                throw new ArgumentNullException(pName);
+            }
         }
     }
 

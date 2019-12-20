@@ -14,7 +14,7 @@ image:
 environment:
   GH_TOKEN:
     secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-  donetsdk: 3.0.100
+  donetsdk: 3.1.100
 init:
     - cmd: git config --global core.autocrlf true
 install:
@@ -26,10 +26,10 @@ install:
     - sh: sudo ./dotnet-install.sh -Channel Current -Version $donetsdk -InstallDir ./dotnetsdk -NoPath
     - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
-    - ps: nuget install GitVersion.CommandLine -ExcludeVersion
-    - sh: mono GitVersion.CommandLine/tools/GitVersion.exe /l console /output buildserver
-    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version 3.0.100 }
-    - cmd: GitVersion.CommandLine\tools\GitVersion.exe /l console /output buildserver
+    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version $env:donetsdk }
+    - ps: dotnet tool install --global GitVersion.Tool
+    - ps: dotnet gitversion /l console /output buildserver
+    - ps: dotnet tool install --global dotnet-sonarscanner
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
@@ -42,18 +42,6 @@ test_script:
 artifacts:
     - path: artifacts/**/*.nupkg
       name: nuget    
-on_success:
-    - cmd: git config --global credential.helper store
-    - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_TOKEN):x-oauth-basic@github.com`n" }
-    - cmd: git config --global user.email "aguacongas@gmail.com"
-    - cmd: git config --global user.name "Aguacongas"
-    - cmd: git stash
-    - cmd: git checkout gh-pages
-    - cmd: IF EXIST latest ( rmdir /S /Q latest )
-    - cmd: move coverage\docs latest
-    - cmd: git add latest
-    - cmd: git commit latest -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
-    - cmd: git push
 deploy:
     - provider: NuGet
       api_key:
@@ -76,36 +64,9 @@ for:
 -
   branches:
     only:
-      - master
-  on_success:
-    - cmd: git config --global credential.helper store
-    - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_TOKEN):x-oauth-basic@github.com`n" }
-    - cmd: git config --global user.email "aguacongas@gmail.com"
-    - cmd: git config --global user.name "Aguacongas"
-    - cmd: git stash
-    - cmd: git checkout gh-pages
-    - cmd: IF EXIST latest ( rmdir /S /Q latest )
-    - cmd: move coverage\docs latest
-    - cmd: git add latest
-    - cmd: git commit latest -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
-    - cmd: git push
--
-  branches:
-    only:
       - /release*/
   on_success:
       - cmd: semantic-release -b %APPVEYOR_REPO_BRANCH%
-      - cmd: git config --global credential.helper store
-      - ps: if ($isWindows) { Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_TOKEN):x-oauth-basic@github.com`n" }
-      - cmd: git config --global user.email "aguacongas@gmail.com"
-      - cmd: git config --global user.name "Aguacongas"
-      - cmd: git stash
-      - cmd: git checkout gh-pages
-      - cmd: mkdir %Version%
-      - cmd: move coverage\docs %Version%
-      - cmd: git add %Version%
-      - cmd: git commit %Version% -m "Appveyor build succed %APPVEYOR_BUILD_NUMBER%"
-      - cmd: git push
 -
   branches:
     except:

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -64,6 +65,11 @@ namespace Aguacongas.Identity.Redis
     /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+    [SuppressMessage("Major Code Smell", "S2326:Unused type parameters should be removed", Justification = "Identity store implementation")]
+    [SuppressMessage("Major Code Smell", "S3881:\"IDisposable\" should be implemented correctly", Justification = "Nothing to dispose")]
+    [SuppressMessage("Major Code Smell", "S2436:Types and methods should not have too many generic parameters", Justification = "Identity store implementation")]
+    [SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "Nothing to dispose")]
+    [SuppressMessage("Critical Code Smell", "S1006:Method overrides should not change parameter defaults", Justification = "<Pending>")]
     public class UserOnlyStore<TUser, TKey, TUserClaim, TUserLogin, TUserToken> :
         RedisUserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
         IUserLoginStore<TUser>,
@@ -124,20 +130,21 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the creation operation.</returns>
-        public async override Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
             user.ConcurrencyStamp = "0";
             var tran = _db.CreateTransaction();
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable S1854 // Dead stores should be removed
             var userNotExistsCondition = tran.AddCondition(Condition.HashNotExists(UsersRedisKey, userId));
+#pragma warning restore S1854 // Dead stores should be removed
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             tran.HashSetAsync(UsersRedisKey, userId, JsonConvert.SerializeObject(user));
             tran.HashSetAsync(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user));
@@ -148,7 +155,7 @@ namespace Aguacongas.Identity.Redis
             }
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(new IdentityError
                 {
@@ -166,14 +173,11 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the update operation.</returns>
-        public async override Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
@@ -189,7 +193,7 @@ namespace Aguacongas.Identity.Redis
             }
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
@@ -204,19 +208,20 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the update operation.</returns>
-        public async override Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IdentityResult> DeleteAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
+#pragma warning disable S1481 // Unused local variables should be removed
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
             var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
+#pragma warning restore S1481 // Unused local variables should be removed
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             tran.HashDeleteAsync(UsersRedisKey, userId);
             tran.HashDeleteAsync(UsersNameIndexKey, user.NormalizedUserName);
@@ -226,7 +231,7 @@ namespace Aguacongas.Identity.Redis
             }
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
@@ -234,14 +239,12 @@ namespace Aguacongas.Identity.Redis
             return IdentityResult.Success;
         }
 
-        public async override Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
+
             if (user.NormalizedEmail == normalizedName)
             {
                 return;
@@ -250,7 +253,7 @@ namespace Aguacongas.Identity.Redis
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+            tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             if (user.NormalizedUserName != null)
             {
@@ -262,7 +265,7 @@ namespace Aguacongas.Identity.Redis
             }
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 throw new DBConcurrencyException($"ConcurrencyStamp {user.ConcurrencyStamp} doesn't match for user: {user.Id}");
             }
@@ -270,14 +273,12 @@ namespace Aguacongas.Identity.Redis
             user.NormalizedUserName = normalizedName;
         }
 
-        public async override Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
+
             if (user.NormalizedEmail == normalizedEmail)
             {
                 return;
@@ -286,7 +287,7 @@ namespace Aguacongas.Identity.Redis
             var userId = ConvertIdToString(user.Id);
 
             var tran = _db.CreateTransaction();
-            var concurencyStampMatchCondition = tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
+            tran.AddCondition(Condition.HashEqual(UsersConcurencyStampIndexKey, userId, GetConcurrencyStamp(user)));
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             if (user.NormalizedEmail != null)
             {
@@ -298,7 +299,7 @@ namespace Aguacongas.Identity.Redis
             }
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-            if (!await tran.ExecuteAsync())
+            if (!await tran.ExecuteAsync().ConfigureAwait(false))
             {
                 throw new DBConcurrencyException($"ConcurrencyStamp {user.ConcurrencyStamp} doesn't match for user: {user.Id}");
             }
@@ -313,20 +314,21 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
         /// </returns>
-        public override async Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            var response = await _db.HashGetAsync(UsersRedisKey, userId);
+            var response = await _db.HashGetAsync(UsersRedisKey, userId).ConfigureAwait(false);
             if (response.HasValue)
             {
                 var user = JsonConvert.DeserializeObject<TUser>(response);
-                user.ConcurrencyStamp = (await _db.HashGetAsync(UsersConcurencyStampIndexKey, userId)).ToString();
+                user.ConcurrencyStamp = (await _db.HashGetAsync(UsersConcurencyStampIndexKey, userId)
+                    .ConfigureAwait(false)).ToString();
 
                 return user;
             }
-            return default(TUser);
+            return default;
         }
 
         /// <summary>
@@ -337,17 +339,18 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="normalizedUserName"/> if it exists.
         /// </returns>
-        public override async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var userId = await _db.HashGetAsync(UsersNameIndexKey, normalizedUserName);
+            var userId = await _db.HashGetAsync(UsersNameIndexKey, normalizedUserName).ConfigureAwait(false);
             if (!userId.HasValue)
             {
-                return default(TUser);
+                return default;
             }
 
-            return await FindByIdAsync(userId, cancellationToken);
+            return await FindByIdAsync(userId, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -356,18 +359,15 @@ namespace Aguacongas.Identity.Redis
         /// <param name="user">The user whose claims should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>A <see cref="Task{TResult}"/> that contains the claims granted to a user.</returns>
-        public async override Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
-            var response = await _db.HashGetAsync(UserClaimsRedisKey, userId);
+            var response = await _db.HashGetAsync(UserClaimsRedisKey, userId).ConfigureAwait(false);
             if (response.HasValue)
             {
                 var claims = JsonConvert.DeserializeObject<List<TUserClaim>>(response);
@@ -384,33 +384,29 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claims">The claim to add to the user.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public override async Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (claims == null)
-            {
-                throw new ArgumentNullException(nameof(claims));
-            }
+            AssertNotNull(user, nameof(user));
+            AssertNotNull(claims, nameof(claims));
 
-            var userClaims = await GetUserClaimsAsync(user);
+            var userClaims = await GetUserClaimsAsync(user).ConfigureAwait(false);
 
             userClaims.AddRange(claims.Select(c => CreateUserClaim(user, c)));
 
             var userId = ConvertIdToString(user.Id);
 
-            var taskList = new List<Task>(claims.Count() + 1);
-            taskList.Add(_db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(userClaims)));
+            var taskList = new List<Task>(claims.Count() + 1)
+            {
+                _db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(userClaims))
+            };
             foreach (var claim in claims)
             {
                 taskList.Add(_db.HashSetAsync(UserClaimsKeyPrefix + claim.Type, userId, claim.Value));
             }
 
-            await Task.WhenAll(taskList);
+            await Task.WhenAll(taskList).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -421,28 +417,19 @@ namespace Aguacongas.Identity.Redis
         /// <param name="newClaim">The new claim replacing the <paramref name="claim"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async override Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
-            if (newClaim == null)
-            {
-                throw new ArgumentNullException(nameof(newClaim));
-            }
+            AssertNotNull(user, nameof(user));
+            AssertNotNull(claim, nameof(claim));
+            AssertNotNull(newClaim, nameof(newClaim));
 
             var userId = ConvertIdToString(user.Id);
 
-            var userClaims = await GetUserClaimsAsync(user);
+            var userClaims = await GetUserClaimsAsync(user).ConfigureAwait(false);
             var taskList = new List<Task>(3);
-            await Task.WhenAll(taskList);
+            await Task.WhenAll(taskList).ConfigureAwait(false);
             foreach (var uc in userClaims)
             {
                 if (uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value)
@@ -455,7 +442,7 @@ namespace Aguacongas.Identity.Redis
             }
 
             taskList.Add(_db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(userClaims)));
-            await Task.WhenAll(taskList);
+            await Task.WhenAll(taskList).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -465,21 +452,15 @@ namespace Aguacongas.Identity.Redis
         /// <param name="claims">The claim to remove.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async override Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (claims == null)
-            {
-                throw new ArgumentNullException(nameof(claims));
-            }
+            AssertNotNull(user, nameof(user));
+            AssertNotNull(claims, nameof(claims));
 
             var userId = ConvertIdToString(user.Id);
 
-            var userClaims = await GetUserClaimsAsync(user);
+            var userClaims = await GetUserClaimsAsync(user).ConfigureAwait(false);
             var taskList = new List<Task>(claims.Count() + 1);
             foreach (var claim in claims)
             {
@@ -489,7 +470,7 @@ namespace Aguacongas.Identity.Redis
 
             taskList.Add(_db.HashSetAsync(UserClaimsRedisKey, userId, JsonConvert.SerializeObject(userClaims)));
 
-            await Task.WhenAll(taskList);
+            await Task.WhenAll(taskList).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -500,26 +481,22 @@ namespace Aguacongas.Identity.Redis
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public override async Task AddLoginAsync(TUser user, UserLoginInfo login,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (login == null)
-            {
-                throw new ArgumentNullException(nameof(login));
-            }
+            AssertNotNull(user, nameof(user));
+            AssertNotNull(login, nameof(login));
 
             var userId = ConvertIdToString(user.Id);
 
-            var logins = await GetUserLoginsAsync(userId);
+            var logins = await GetUserLoginsAsync(userId).ConfigureAwait(false);
             logins.Add(CreateUserLogin(user, login));
 
-            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins));
-            await _db.HashSetAsync(UserLoginProviderKeyPrefix + login.LoginProvider, login.ProviderKey, userId);
+            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins))
+                .ConfigureAwait(false);
+            await _db.HashSetAsync(UserLoginProviderKeyPrefix + login.LoginProvider, login.ProviderKey, userId)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -531,22 +508,21 @@ namespace Aguacongas.Identity.Redis
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public override async Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
-            var logins = await GetUserLoginsAsync(userId);
+            var logins = await GetUserLoginsAsync(userId).ConfigureAwait(false);
             logins.RemoveAll(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
 
-            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins));
-            await _db.HashDeleteAsync(UserLoginProviderKeyPrefix + loginProvider, providerKey);
+            await _db.HashSetAsync(UserLoginsRedisKey, userId, JsonConvert.SerializeObject(logins))
+                .ConfigureAwait(false);
+            await _db.HashDeleteAsync(UserLoginProviderKeyPrefix + loginProvider, providerKey)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -557,18 +533,15 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> for the asynchronous operation, containing a list of <see cref="UserLoginInfo"/> for the specified <paramref name="user"/>, if any.
         /// </returns>
-        public async override Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            AssertNotNull(user, nameof(user));
 
             var userId = ConvertIdToString(user.Id);
 
-            var logins = await GetUserLoginsAsync(userId);
+            var logins = await GetUserLoginsAsync(userId).ConfigureAwait(false);
 
             return logins
                 .Select(l => new UserLoginInfo(l.LoginProvider, l.ProviderKey, l.ProviderDisplayName))
@@ -585,14 +558,16 @@ namespace Aguacongas.Identity.Redis
         /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
         /// </returns>
         public async override Task<TUser> FindByLoginAsync(string loginProvider, string providerKey,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var userLogin = await FindUserLoginAsync(loginProvider, providerKey, cancellationToken);
+            var userLogin = await FindUserLoginAsync(loginProvider, providerKey, cancellationToken)
+                .ConfigureAwait(false);
             if (userLogin != null)
             {
-                return await FindUserAsync(userLogin.UserId, cancellationToken);
+                return await FindUserAsync(userLogin.UserId, cancellationToken)
+                    .ConfigureAwait(false);
             }
             return null;
         }
@@ -605,18 +580,19 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
         /// </returns>
-        public override async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            var response = await _db.HashGetAsync(UsersEmailIndexKey, normalizedEmail);
+            var response = await _db.HashGetAsync(UsersEmailIndexKey, normalizedEmail)
+                .ConfigureAwait(false);
             if (response.HasValue)
             {
-                return await FindByIdAsync(response, cancellationToken);
+                return await FindByIdAsync(response, cancellationToken).ConfigureAwait(false);
             }
 
-            return default(TUser);
+            return default;
         }
 
         /// <summary>
@@ -627,23 +603,22 @@ namespace Aguacongas.Identity.Redis
         /// <returns>
         /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim. 
         /// </returns>
-        public async override Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
+        public async override Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
+            AssertNotNull(claim, nameof(claim));
 
-            var result = await _db.HashGetAllAsync(UserClaimsKeyPrefix + claim.Type);
+            var result = await _db.HashGetAllAsync(UserClaimsKeyPrefix + claim.Type)
+                .ConfigureAwait(false);
 
             var users = new ConcurrentBag<TUser>();
             var taskList = new List<Task>(result.Length);
             foreach (var uc in result)
             {
                 taskList.Add(Task.Run(async () => {
-                    var user = await FindByIdAsync(uc.Name, cancellationToken);
+                    var user = await FindByIdAsync(uc.Name, cancellationToken)
+                        .ConfigureAwait(false);
                     if (user != null)
                     {
                         users.Add(user);
@@ -651,7 +626,8 @@ namespace Aguacongas.Identity.Redis
                 }));
             }
 
-            Task.WaitAll(taskList.ToArray());
+            await Task.WhenAll(taskList.ToArray())
+                .ConfigureAwait(false);
 
             return users.ToList();
         }
@@ -725,7 +701,7 @@ namespace Aguacongas.Identity.Redis
         /// <returns>The user login if it exists.</returns>
         protected override async Task<TUserLogin> FindUserLoginAsync(string userId, string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            var data = await GetUserLoginsAsync(userId);
+            var data = await GetUserLoginsAsync(userId).ConfigureAwait(false);
             if (data != null)
             {
                 return data.FirstOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
@@ -742,15 +718,17 @@ namespace Aguacongas.Identity.Redis
         /// <returns>The user login if it exists.</returns>
         protected override async Task<TUserLogin> FindUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            var userId = await _db.HashGetAsync(UserLoginProviderKeyPrefix + loginProvider, providerKey);
+            var userId = await _db.HashGetAsync(UserLoginProviderKeyPrefix + loginProvider, providerKey)
+                .ConfigureAwait(false);
 
             if (userId.HasValue)
             {
-                var logins = await GetUserLoginsAsync(userId);
+                var logins = await GetUserLoginsAsync(userId)
+                    .ConfigureAwait(false);
                 return logins.FirstOrDefault(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey);
             }
 
-            return default(TUserLogin);
+            return default;
         }
 
         /// <summary>
@@ -763,7 +741,8 @@ namespace Aguacongas.Identity.Redis
         {
             var userId = ConvertIdToString(user.Id);
 
-            var result = await _db.HashGetAsync(UserTokensRedisKey, userId);
+            var result = await _db.HashGetAsync(UserTokensRedisKey, userId)
+                .ConfigureAwait(false);
             if (result.HasValue)
             {
                 return JsonConvert.DeserializeObject<List<TUserToken>>(result);
@@ -782,14 +761,16 @@ namespace Aguacongas.Identity.Redis
         {
             var userId = ConvertIdToString(user.Id);
 
-            await _db.HashSetAsync(UserTokensRedisKey, userId, JsonConvert.SerializeObject(tokens));
+            await _db.HashSetAsync(UserTokensRedisKey, userId, JsonConvert.SerializeObject(tokens))
+                .ConfigureAwait(false);
         }
 
         protected virtual async Task<List<TUserClaim>> GetUserClaimsAsync(TUser user)
         {
             var userId = ConvertIdToString(user.Id);
 
-            var response = await _db.HashGetAsync(UserClaimsRedisKey, userId);
+            var response = await _db.HashGetAsync(UserClaimsRedisKey, userId)
+                .ConfigureAwait(false);
             if (response.HasValue)
             {
                 return JsonConvert.DeserializeObject<List<TUserClaim>>(response);
@@ -800,7 +781,8 @@ namespace Aguacongas.Identity.Redis
 
         protected virtual async Task<List<TUserLogin>> GetUserLoginsAsync(string userId)
         {
-            var response = await _db.HashGetAsync(UserLoginsRedisKey, userId);
+            var response = await _db.HashGetAsync(UserLoginsRedisKey, userId)
+                .ConfigureAwait(false);
             if (response.HasValue)
             {
                 return JsonConvert.DeserializeObject<List<TUserLogin>>(response);
