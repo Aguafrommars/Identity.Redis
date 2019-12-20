@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/aguacongas/Identity.Redis/compare/3.0.0...3.1.0) (2019-12-20)
+
+
+### Features
+
+* improve code quality ([3e93fd5](https://github.com/aguacongas/Identity.Redis/commit/3e93fd5e6ab15346aaa3836be45e25607660e75f))
+
 # [3.0.0](https://github.com/aguacongas/Identity.Redis/compare/2.0.0...3.0.0) (2019-09-26)
 
 
