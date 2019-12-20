@@ -6,7 +6,7 @@ skip_commits:
 branches:
   only:
   - master
-  - /preview*/ 
+  - /preview*/
   - /release*/
 image: 
 - Ubuntu
