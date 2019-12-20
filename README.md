@@ -2,7 +2,7 @@
 [ASP.NET Identity](https://github.com/aspnet/AspNetCore/tree/master/src/Identity) Redis Provider
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tmh3ib2s64ay2sc7?svg=true)](https://ci.appveyor.com/project/aguacongas/identity-redis)
-[![Latest Code coveragre](https://aguacongas.github.io/Identity.Redis/latest/badge_linecoverage.svg)](https://aguacongas.github.io/Identity.Redis/latest)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aguacongas_Identity.Redis&metric=alert_status)](https://sonarcloud.io/dashboard?id=aguacongas_Identity.Redis)
 
 Nuget packages
 --------------
