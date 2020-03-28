@@ -1,5 +1,5 @@
-﻿// Project: aguacongas/Identity.Redis
-// Copyright (c) 2018 @Olivier Lefebvre
+﻿// Project: aguacongas/Identity.Firebase
+// Copyright (c) 2020 @Olivier Lefebvre
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -65,11 +65,11 @@ namespace Aguacongas.Identity.Redis
         where TUserRole : IdentityUserRole<TKey>, new()
         where TRoleClaim : IdentityRoleClaim<TKey>, new()
     {
-        private const string RolesRedisKey = "roles";
-        private const string RolesConcurencyStampIndexKey = "roles-concurency";
-        private const string RolesNameIndexKey = "role-names";
-        private const string RoleClaimsRedisKey = "role-claims";
-        private const string RoleClaimsKeyPrefix = "role-claims-";
+        private const string RolesRedisKey = "{roles}";
+        private const string RolesConcurencyStampIndexKey = "{roles}-concurency";
+        private const string RolesNameIndexKey = "{role}-names";
+        private const string RoleClaimsRedisKey = "{role}-claims";
+        private const string RoleClaimsKeyPrefix = "{role}-claims-";
 
         private readonly IDatabase _db;
         private bool _disposed;

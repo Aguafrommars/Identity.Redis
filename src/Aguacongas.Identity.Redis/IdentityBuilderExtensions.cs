@@ -1,5 +1,5 @@
-// Project: aguacongas/Identity.Redis
-// Copyright (c) 2018 @Olivier Lefebvre
+// Project: aguacongas/Identity.Firebase
+// Copyright (c) 2020 @Olivier Lefebvre
 using Aguacongas.Identity.Redis;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
