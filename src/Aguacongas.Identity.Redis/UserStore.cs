@@ -103,11 +103,11 @@ namespace Aguacongas.Identity.Redis
         where TUserToken : IdentityUserToken<TKey>, new()
         where TRoleClaim : IdentityRoleClaim<TKey>, new()
     {
-        private const string UserRolesRedisKey = "users-roles";
-        private const string UserRolesNameIndexKey = "users-rolenames";
-        private const string RolesRedisKey = "roles";
-        private const string RolesConcurencyStampIndexKey = "roles-concurency";
-        private const string RolesNameIndexKey = "role-names";
+        private const string UserRolesRedisKey = "{users}-roles";
+        private const string UserRolesNameIndexKey = "{users}-rolenames";
+        private const string RolesRedisKey = "{roles}";
+        private const string RolesConcurencyStampIndexKey = "{roles}-concurency";
+        private const string RolesNameIndexKey = "{role}-names";
 
         private readonly IDatabase _db;
         private readonly UserOnlyStore<TUser, TKey, TUserClaim, TUserLogin, TUserToken> _userOnlyStore;
