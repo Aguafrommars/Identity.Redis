@@ -89,15 +89,15 @@ namespace Aguacongas.Identity.Redis
         where TUserLogin : IdentityUserLogin<TKey>, new()
         where TUserToken : IdentityUserToken<TKey>, new()
     {
-        private const string UsersRedisKey = "users";
-        private const string UsersConcurencyStampIndexKey = "users-concurency";
-        private const string UsersNameIndexKey = "users-name";
-        private const string UsersEmailIndexKey = "users-email";
-        private const string UserLoginsRedisKey = "user-logins";
-        private const string UserLoginProviderKeyPrefix = "login-provider-";
-        private const string UserClaimsRedisKey = "user-claims";
-        private const string UserClaimsKeyPrefix = "user-claim-";
-        private const string UserTokensRedisKey = "user-tokens";
+        private const string UsersRedisKey = "{users}";
+        private const string UsersConcurencyStampIndexKey = "{users}-concurency";
+        private const string UsersNameIndexKey = "{users}-name";
+        private const string UsersEmailIndexKey = "{users}-email";
+        private const string UserLoginsRedisKey = "{user}-logins";
+        private const string UserLoginProviderKeyPrefix = "{user}-login-provider-";
+        private const string UserClaimsRedisKey = "{user}-claims";
+        private const string UserClaimsKeyPrefix = "{user}-claim-";
+        private const string UserTokensRedisKey = "{user}-tokens";
 
         private readonly IDatabase _db;
 
