@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/aguacongas/Identity.Redis/compare/3.1.0...3.1.1) (2020-03-29)
+
+
+### Bug Fixes
+
+* support redis cluster ([ec87558](https://github.com/aguacongas/Identity.Redis/commit/ec87558d637457214fff88e1c5ffa507509875c5)), closes [#22](https://github.com/aguacongas/Identity.Redis/issues/22)
+
 # [3.1.0](https://github.com/aguacongas/Identity.Redis/compare/3.0.0...3.1.0) (2019-12-20)
 
 
