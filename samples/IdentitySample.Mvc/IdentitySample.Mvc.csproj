@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <Description>Identity sample MVC application on ASP.NET Core</Description>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>Aguacongas.Identity.Redis.Sample</UserSecretsId>
     <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aguacongas.Identity.Redis" Version="3.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="5.0.0" />
   </ItemGroup>
 </Project>
