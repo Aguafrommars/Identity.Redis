@@ -14,7 +14,7 @@ image:
 environment:
   GH_TOKEN:
     secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-  donetsdk: 5.0.100
+  donetsdk: 5.0.402
 init:
     - cmd: git config --global core.autocrlf true
 install:
