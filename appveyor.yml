@@ -10,11 +10,13 @@ branches:
   - /release*/
 image: 
 - Ubuntu
-- Visual Studio 2019
+- Visual Studio 2022
 environment:
   GH_TOKEN:
     secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-  donetsdk: 7.0.100
+  JAVA_HOME: C:\Program Files\Java\jdk19
+  PATH: $(JAVA_HOME)\bin;$(PATH)
+  donetsdk: 7.0.101
 init:
     - cmd: git config --global core.autocrlf true
 install:
