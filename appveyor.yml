@@ -9,7 +9,6 @@ branches:
   - /preview*/
   - /release*/
 image: 
-- Ubuntu
 - Visual Studio 2022
 environment:
   GH_TOKEN:
