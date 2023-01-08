@@ -12,7 +12,7 @@ image:
 - Visual Studio 2022
 environment:
   GH_TOKEN:
-    secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
+    secure: /o9VAhx5ewGmdLR9qcgFJMzBaCuzOmGlsXAHu7khUJLdQzsv4gJzLUfYDghcRPHd
   JAVA_HOME: C:\Program Files\Java\jdk19
   PATH: $(JAVA_HOME)\bin;$(PATH)
   donetsdk: 7.0.101
@@ -47,7 +47,7 @@ artifacts:
 deploy:
     - provider: NuGet
       api_key:
-        secure: L5Ol2yiygLW8nUF6j5/rwx4feonMPly+S69GjoX1ilEUklPMixlX5RW2l8FJScNK
+        secure: bvkKhXIKsDM1ThfcWTbuusND0sOBiDoJGOoD2fYijGoj4C9xx22QKfR7Y9q+j7eX
       on:
         branch: 
             - /preview*/
