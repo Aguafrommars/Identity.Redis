@@ -21,7 +21,7 @@ if ($isLinux) {
         $prArgs = "-d:sonar.branch.name=$env:APPVEYOR_REPO_BRANCH"
     }
 
-    dotnet sonarscanner begin /k:aguacongas_Identity.Redis -o:aguacongas -d:sonar.host.url=https://sonarcloud.io -d:sonar.login=$env:sonarqube -d:sonar.coverageReportPaths=coverage\SonarQube.xml $prArgs -v:$env:version
+    dotnet sonarscanner begin /k:aguacongas_Identity.Redis -o:aguafrommars -d:sonar.host.url=https://sonarcloud.io -d:sonar.login=$env:sonarqube -d:sonar.coverageReportPaths=coverage\SonarQube.xml $prArgs -v:$env:version
 
     dotnet build -c Release
 
@@ -44,7 +44,7 @@ if ($isLinux) {
         $merge = "$merge;$path"
     }
     Write-Host $merge
-    ReportGenerator\tools\netcoreapp3.0\ReportGenerator.exe "-reports:$merge" "-targetdir:coverage" "-reporttypes:SonarQube"
+    ReportGenerator\tools\net7.0\ReportGenerator.exe "-reports:$merge" "-targetdir:coverage" "-reporttypes:SonarQube"
     
     dotnet sonarscanner end -d:sonar.login=$env:sonarqube
 }
