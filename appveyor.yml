@@ -15,7 +15,7 @@ environment:
     secure: /o9VAhx5ewGmdLR9qcgFJMzBaCuzOmGlsXAHu7khUJLdQzsv4gJzLUfYDghcRPHd
   JAVA_HOME: C:\Program Files\Java\jdk19
   PATH: $(JAVA_HOME)\bin;$(PATH)
-  donetsdk: 7.0.101
+  dotnetsdk: 7.0.101
 init:
     - cmd: git config --global core.autocrlf true
 install:
@@ -25,12 +25,12 @@ install:
     - sh: sudo apt-get -y install apt-transport-https
     - sh: sudo apt-get update
     - sh: sudo chmod +x ./dotnet-install.sh
-    - sh: sudo ./dotnet-install.sh -Channel Current -Version $donetsdk -InstallDir ./dotnetsdk -NoPath
+    - sh: sudo ./dotnet-install.sh -Channel Current -Version $dotnetsdk -InstallDir ./dotnetsdk -NoPath
     - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
     - ps: dotnet tool install --global GitVersion.Tool
     - ps: dotnet gitversion /l console /output buildserver
-    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version $env:donetsdk }
+    - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
     - ps: dotnet tool install --global dotnet-sonarscanner
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
