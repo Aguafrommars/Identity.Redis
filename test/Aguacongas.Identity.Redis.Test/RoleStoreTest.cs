@@ -19,14 +19,14 @@ namespace Aguacongas.Identity.Redis.Test
             var dbMock = new Mock<IDatabase>();
             var store = new RoleStore<IdentityRole>(dbMock.Object);
             store.Dispose();
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByIdAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByNameAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.GetRoleIdAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.GetRoleNameAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.SetRoleNameAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.CreateAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.UpdateAsync(null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.DeleteAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.FindByIdAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.FindByNameAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.GetRoleIdAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.GetRoleNameAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.SetRoleNameAsync(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.CreateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.UpdateAsync(null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>  store.DeleteAsync(null));
         }
 
         [Fact]
@@ -35,12 +35,12 @@ namespace Aguacongas.Identity.Redis.Test
             Assert.Throws<ArgumentNullException>("db", () => new RoleStore<IdentityRole>(null));
             var dbMock = new Mock<IDatabase>();
             var store = new RoleStore<IdentityRole>(dbMock.Object);
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleIdAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleNameAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.SetRoleNameAsync(null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.CreateAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.UpdateAsync(null));
-            await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.DeleteAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.GetRoleIdAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.GetRoleNameAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.SetRoleNameAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.CreateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.UpdateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>("role", () =>  store.DeleteAsync(null));
         }
 
     }
