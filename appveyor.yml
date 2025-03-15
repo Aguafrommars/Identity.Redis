@@ -28,6 +28,7 @@ install:
     - sh: sudo ./dotnet-install.sh -Channel Current -Version $dotnetsdk -InstallDir ./dotnetsdk -NoPath
     - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
+    - ps: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
     - ps: dotnet tool install --global GitVersion.Tool --ignore-failed-sources
     - ps: dotnet gitversion /l console /output buildserver
     - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
