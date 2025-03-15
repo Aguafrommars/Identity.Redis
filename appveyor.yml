@@ -28,10 +28,10 @@ install:
     - sh: sudo ./dotnet-install.sh -Channel Current -Version $dotnetsdk -InstallDir ./dotnetsdk -NoPath
     - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
     - sh: sudo apt -y install nuget
-    - ps: dotnet tool install --global GitVersion.Tool
+    - ps: dotnet tool install --global GitVersion.Tool --ignore-failed-sources
     - ps: dotnet gitversion /l console /output buildserver
     - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
-    - ps: dotnet tool install --global dotnet-sonarscanner
+    - ps: dotnet tool install --global dotnet-sonarscanner --ignore-failed-sources
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
