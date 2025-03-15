@@ -1,6 +1,6 @@
 version: 1.0.{build}
 skip_tags: true
-stack: redis, node 13
+stack: redis, node 18
 skip_commits:
   message: /\[chore\]/
 branches:
@@ -9,28 +9,21 @@ branches:
   - /preview*/
   - /release*/
 image: 
-- Ubuntu
-- Visual Studio 2019
+- Visual Studio 2022
 environment:
   GH_TOKEN:
-    secure: u7qaOQsrkLqq44yS24C0eM2vRCzp1A8gZTWNmlA58TIDJGmrDXguHL9H/vww7Fg/
-  donetsdk: 3.1.100
+    secure: /o9VAhx5ewGmdLR9qcgFJMzBaCuzOmGlsXAHu7khUJLdQzsv4gJzLUfYDghcRPHd
+  JAVA_HOME: C:\Program Files\Java\jdk19
+  PATH: $(JAVA_HOME)\bin;$(PATH)
+  dotnetsdk: 9.0.201
 init:
     - cmd: git config --global core.autocrlf true
 install:
     - ps: if ($isWindows) { Install-Product node '' }
-    - sh: wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
-    - sh: sudo dpkg -i packages-microsoft-prod.deb
-    - sh: sudo apt-get -y install apt-transport-https
-    - sh: sudo apt-get update
-    - sh: sudo chmod +x ./dotnet-install.sh
-    - sh: sudo ./dotnet-install.sh -Channel Current -Version $donetsdk -InstallDir ./dotnetsdk -NoPath
-    - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
-    - sh: sudo apt -y install nuget
-    - ps: if ($isWindows) { .\dotnet-install.ps1 -Version $env:donetsdk }
-    - ps: dotnet tool install --global GitVersion.Tool
+    - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
+    - ps: dotnet tool install --global GitVersion.Tool --ignore-failed-sources
+    - ps: dotnet tool install --global dotnet-sonarscanner --ignore-failed-sources
     - ps: dotnet gitversion /l console /output buildserver
-    - ps: dotnet tool install --global dotnet-sonarscanner
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
@@ -46,7 +39,7 @@ artifacts:
 deploy:
     - provider: NuGet
       api_key:
-        secure: yX9LRQv/o6UvkMikS4MyQtOAo51uJXUH+/P5jukIXdt9kbE7fMmSpr6RGhFWwcbC
+        secure: bvkKhXIKsDM1ThfcWTbuusND0sOBiDoJGOoD2fYijGoj4C9xx22QKfR7Y9q+j7eX
       on:
         branch: 
             - /preview*/
