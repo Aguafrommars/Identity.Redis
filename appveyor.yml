@@ -15,23 +15,15 @@ environment:
     secure: /o9VAhx5ewGmdLR9qcgFJMzBaCuzOmGlsXAHu7khUJLdQzsv4gJzLUfYDghcRPHd
   JAVA_HOME: C:\Program Files\Java\jdk19
   PATH: $(JAVA_HOME)\bin;$(PATH)
-  dotnetsdk: 9.0.101
+  dotnetsdk: 9.0.201
 init:
     - cmd: git config --global core.autocrlf true
 install:
     - ps: if ($isWindows) { Install-Product node '' }
-    - sh: wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
-    - sh: sudo dpkg -i packages-microsoft-prod.deb
-    - sh: sudo apt-get -y install apt-transport-https
-    - sh: sudo apt-get update
-    - sh: sudo chmod +x ./dotnet-install.sh
-    - sh: sudo ./dotnet-install.sh -Channel Current -Version $dotnetsdk -InstallDir ./dotnetsdk -NoPath
-    - sh: export PATH=/home/appveyor/projects/identity-redis/dotnetsdk:$PATH
-    - sh: sudo apt -y install nuget
-    - ps: dotnet tool install --global GitVersion.Tool
-    - ps: dotnet gitversion /l console /output buildserver
     - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
-    - ps: dotnet tool install --global dotnet-sonarscanner
+    - ps: dotnet tool install --global GitVersion.Tool --ignore-failed-sources
+    - ps: dotnet tool install --global dotnet-sonarscanner --ignore-failed-sources
+    - ps: dotnet gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
     - cmd: redis-64\tools\redis-server.exe --service-start
