@@ -2,7 +2,7 @@ version: 1.0.{build}
 skip_tags: true
 stack: redis, node 18
 skip_commits:
-  message: /\[chore\]/
+  message: /chore\(release\)/
 branches:
   only:
   - master
