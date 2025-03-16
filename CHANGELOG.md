@@ -1,3 +1,10 @@
+## [3.1.3](https://github.com/Aguafrommars/Identity.Redis/compare/3.1.2...3.1.3) (2025-03-16)
+
+
+### Bug Fixes
+
+* update packages ([ade0107](https://github.com/Aguafrommars/Identity.Redis/commit/ade01072b2d2a59c250a9b33f63159114e7a76ef))
+
 ## [3.1.2](https://github.com/Aguafrommars/Identity.Redis/compare/3.1.1...3.1.2) (2025-03-15)
 
 
