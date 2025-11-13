@@ -20,9 +20,9 @@ init:
     - cmd: git config --global core.autocrlf true
 install:
     - ps: if ($isWindows) { Install-Product node '' }
-    - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
     - ps: dotnet tool install --global GitVersion.Tool --ignore-failed-sources
     - ps: dotnet tool install --global dotnet-sonarscanner --ignore-failed-sources
+    - cmd: pwsh .\dotnet-install.ps1 -Version %dotnetsdk% -InstallDir "C:\Program Files\dotnet"
     - ps: dotnet gitversion /l console /output buildserver
     - cmd: nuget install redis-64 -excludeversion
     - cmd: redis-64\tools\redis-server.exe --service-install
