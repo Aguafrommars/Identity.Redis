@@ -1,3 +1,32 @@
+# [3.2.0](https://github.com/Aguafrommars/Identity.Redis/compare/3.1.3...3.2.0) (2025-11-15)
+
+
+### Bug Fixes
+
+* update packages ([cfc0ee3](https://github.com/Aguafrommars/Identity.Redis/commit/cfc0ee3ed47f4e94059e54d3a1f1bcb0e0bbb993))
+* update packages ([7c23b84](https://github.com/Aguafrommars/Identity.Redis/commit/7c23b84533d79cb5fddf919e7119ef741c45ba71))
+* update packages ([bd724c5](https://github.com/Aguafrommars/Identity.Redis/commit/bd724c5caef4b879f9f280df8784a148dff63b41))
+* update packages ([23155ad](https://github.com/Aguafrommars/Identity.Redis/commit/23155adb370c1ead640c6ddc449bc4cc19084931))
+* update packages ([6364f9f](https://github.com/Aguafrommars/Identity.Redis/commit/6364f9f8ebcb60e1573eb49da201edb7715c095e))
+* update packages ([0ac7fe7](https://github.com/Aguafrommars/Identity.Redis/commit/0ac7fe7e1761f434d754ccee1af0a83babf72e4f))
+* update packages ([83bd366](https://github.com/Aguafrommars/Identity.Redis/commit/83bd366b257564567c4f989dc9e7446abb7164ef))
+* update packages ([7c48c38](https://github.com/Aguafrommars/Identity.Redis/commit/7c48c38f82de769b72ea843fc397cb88ce07052b))
+* update packages ([7e84f2b](https://github.com/Aguafrommars/Identity.Redis/commit/7e84f2b105f53a28bf516b344c62a3ee1aaf466e))
+* update packages ([12b28ef](https://github.com/Aguafrommars/Identity.Redis/commit/12b28ef053abb3f231a22cccfcf964badcd1edb8))
+* update packages ([c337d0b](https://github.com/Aguafrommars/Identity.Redis/commit/c337d0b4d347b749d970bc6d974e4f333e2d6d95))
+* update packages ([00e1964](https://github.com/Aguafrommars/Identity.Redis/commit/00e1964a3f477dcb30cadd2bfa84eebfeab084b2))
+* update packages ([f48e4ef](https://github.com/Aguafrommars/Identity.Redis/commit/f48e4efe96914573f8eb344135c391e83e8b2c75))
+* update packages ([0e5798f](https://github.com/Aguafrommars/Identity.Redis/commit/0e5798f347af0f1dc478849bd4cbd33662f52016))
+* update packages ([d68f0e7](https://github.com/Aguafrommars/Identity.Redis/commit/d68f0e757eac5bbe5cb63ab525e8d65558799d99))
+* update packages ([833277e](https://github.com/Aguafrommars/Identity.Redis/commit/833277e69ef0cd362919eafd365da6d6ca1dee87))
+* update packages ([ca5f3ed](https://github.com/Aguafrommars/Identity.Redis/commit/ca5f3ed9b8645580435f5ebd9fbf183ada900814))
+* update packages ([f460a7f](https://github.com/Aguafrommars/Identity.Redis/commit/f460a7f06ca3f755561e08af3c23e00d4eb25fe2))
+
+
+### Features
+
+* replace obsolete dependency ([2a3343a](https://github.com/Aguafrommars/Identity.Redis/commit/2a3343a33953fa1ba1b6eacc163fe1279f5ef61c))
+
 ## [3.1.3](https://github.com/Aguafrommars/Identity.Redis/compare/3.1.2...3.1.3) (2025-03-16)
 
 
