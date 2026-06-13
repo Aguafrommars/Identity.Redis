@@ -1,5 +1,5 @@
 ﻿// Project: aguacongas/Identity.Redis
-// Copyright (c) 2025 @Olivier Lefebvre
+// Copyright (c) 2026 @Olivier Lefebvre
 using System.ComponentModel.DataAnnotations;
 
 namespace IdentitySample.Models.AccountViewModels
