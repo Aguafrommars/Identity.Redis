@@ -19,7 +19,7 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
 		<PackageReference Include="Moq" Version="4.21.0" />
 		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.12" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
+		<PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
