@@ -27,7 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="11.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="StackExchange.Redis" Version="3.4.31" />
+    <PackageReference Include="StackExchange.Redis" Version="3.4.35" />
     <PackageReference Include="System.Security.Cryptography.Xml" Version="11.0.0" />
   </ItemGroup>
 </Project>
